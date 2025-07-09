@@ -1,0 +1,196 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/berean-bible-app/app/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// NextAuth.js required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id                String         @id @default(cuid())
+  name              String?
+  email             String         @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  // User preferences
+  timezone          String?        @default("UTC")
+  preferredReadingTime Int?        // Minutes for preferred daily reading time
+  notificationsEnabled Boolean     @default(true)
+  theme             String?        @default("light")
+  fontSize          String?        @default("medium")
+  
+  // Relations
+  accounts          Account[]
+  sessions          Session[]
+  readingProgress   ReadingProgress[]
+  notes             Note[]
+  achievements      UserAchievement[]
+  
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// Bible reading plan models
+model ReadingPlan {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  totalDays         Int
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  dailyReadings     DailyReading[]
+  userProgress      ReadingProgress[]
+  
+  @@map("reading_plans")
+}
+
+model DailyReading {
+  id                String      @id @default(cuid())
+  planId            String
+  day               Int
+  passages          String[]    // Array of Bible passages (e.g., ["Matthew 1:1-17", "Matthew 1:18-25"])
+  estimatedMinutes  Int?        // Estimated reading time in minutes
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations
+  plan              ReadingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  progress          ReadingProgress[]
+  notes             Note[]
+  
+  @@unique([planId, day])
+  @@map("daily_readings")
+}
+
+// User progress tracking
+model ReadingProgress {
+  id                String       @id @default(cuid())
+  userId            String
+  planId            String
+  readingId         String
+  currentCycle      Int          @default(1) // For the 3.5-year repetition cycle
+  isCompleted       Boolean      @default(false)
+  completedAt       DateTime?
+  readingTimeSeconds Int?        // Time spent reading in seconds
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  // Relations
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan              ReadingPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  dailyReading      DailyReading @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, planId, readingId])
+  @@map("reading_progress")
+}
+
+// User notes and reflections
+model Note {
+  id                String       @id @default(cuid())
+  userId            String
+  readingId         String
+  content           String       @db.Text
+  isPrivate         Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  // Relations
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyReading      DailyReading @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  
+  @@map("notes")
+}
+
+// Achievement system
+model Achievement {
+  id                String   @id @default(cuid())
+  name              String
+  description       String
+  icon              String?
+  requiredCount     Int      @default(1)
+  category          String   // "streak", "completion", "milestone", etc.
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  userAchievements  UserAchievement[]
+  
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime    @default(now())
+  
+  // Relations
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+// Analytics and statistics
+model ReadingStreak {
+  id                String   @id @default(cuid())
+  userId            String
+  currentStreak     Int      @default(0)
+  longestStreak     Int      @default(0)
+  lastReadingDate   DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@unique([userId])
+  @@map("reading_streaks")
+}
