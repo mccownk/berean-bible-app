@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useCustomTheme } from '@/components/theme-provider';
 import { 
   User, 
   Settings, 
@@ -51,11 +52,12 @@ export function ProfileContent({ data }: ProfileContentProps) {
   const { update } = useSession();
   const { toast } = useToast();
   const router = useRouter();
+  const { theme, setTheme: setAppTheme, mounted } = useCustomTheme();
   
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState(data.user.name || '');
   const [notificationsEnabled, setNotificationsEnabled] = useState(data.user.preferences.notificationsEnabled);
-  const [theme, setTheme] = useState(data.user.preferences.theme || 'light');
+  const [localTheme, setLocalTheme] = useState(data.user.preferences.theme || 'light');
   const [fontSize, setFontSize] = useState(data.user.preferences.fontSize || 'medium');
   const [preferredReadingTime, setPreferredReadingTime] = useState(
     data.user.preferences.preferredReadingTime || 15
@@ -67,6 +69,26 @@ export function ProfileContent({ data }: ProfileContentProps) {
     data.user.preferences.preferredStartTime || '09:00'
   );
 
+  // Apply user's saved theme when component mounts
+  useEffect(() => {
+    if (mounted && data.user.preferences.theme && data.user.preferences.theme !== theme) {
+      setAppTheme(data.user.preferences.theme);
+    }
+  }, [mounted, data.user.preferences.theme, theme, setAppTheme]);
+
+  // Update local theme state when app theme changes
+  useEffect(() => {
+    if (mounted) {
+      setLocalTheme(theme);
+    }
+  }, [theme, mounted]);
+
+  // Handle theme change immediately
+  const handleThemeChange = (newTheme: string) => {
+    setLocalTheme(newTheme);
+    setAppTheme(newTheme);
+  };
+
   const handleSaveProfile = async () => {
     setLoading(true);
     
@@ -77,7 +99,7 @@ export function ProfileContent({ data }: ProfileContentProps) {
         body: JSON.stringify({
           name,
           notificationsEnabled,
-          theme,
+          theme: localTheme,
           fontSize,
           preferredReadingTime,
           preferredTimeOfDay,
@@ -253,7 +275,7 @@ export function ProfileContent({ data }: ProfileContentProps) {
 
             <div className="space-y-2">
               <Label>Theme</Label>
-              <Select value={theme} onValueChange={setTheme}>
+              <Select value={localTheme} onValueChange={handleThemeChange}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
