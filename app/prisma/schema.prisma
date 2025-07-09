@@ -53,6 +53,8 @@ model User {
   // User preferences
   timezone          String?        @default("UTC")
   preferredReadingTime Int?        // Minutes for preferred daily reading time
+  preferredTimeOfDay String?       @default("Morning") // Morning, Afternoon, Evening
+  preferredStartTime String?       @default("09:00")   // Time in HH:MM format
   notificationsEnabled Boolean     @default(true)
   theme             String?        @default("light")
   fontSize          String?        @default("medium")

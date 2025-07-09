@@ -14,7 +14,15 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { name, notificationsEnabled, theme, fontSize, preferredReadingTime } = await request.json();
+    const { 
+      name, 
+      notificationsEnabled, 
+      theme, 
+      fontSize, 
+      preferredReadingTime,
+      preferredTimeOfDay,
+      preferredStartTime
+    } = await request.json();
 
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
@@ -23,7 +31,9 @@ export async function PATCH(request: NextRequest) {
         notificationsEnabled,
         theme,
         fontSize,
-        preferredReadingTime
+        preferredReadingTime,
+        preferredTimeOfDay,
+        preferredStartTime
       }
     });
 
@@ -37,7 +47,9 @@ export async function PATCH(request: NextRequest) {
           notificationsEnabled: updatedUser.notificationsEnabled,
           theme: updatedUser.theme,
           fontSize: updatedUser.fontSize,
-          preferredReadingTime: updatedUser.preferredReadingTime
+          preferredReadingTime: updatedUser.preferredReadingTime,
+          preferredTimeOfDay: updatedUser.preferredTimeOfDay,
+          preferredStartTime: updatedUser.preferredStartTime
         }
       }
     });

@@ -34,6 +34,8 @@ interface ProfileData {
     preferences: {
       timezone: string | null;
       preferredReadingTime: number | null;
+      preferredTimeOfDay: string | null;
+      preferredStartTime: string | null;
       notificationsEnabled: boolean;
       theme: string | null;
       fontSize: string | null;
@@ -58,6 +60,12 @@ export function ProfileContent({ data }: ProfileContentProps) {
   const [preferredReadingTime, setPreferredReadingTime] = useState(
     data.user.preferences.preferredReadingTime || 15
   );
+  const [preferredTimeOfDay, setPreferredTimeOfDay] = useState(
+    data.user.preferences.preferredTimeOfDay || 'Morning'
+  );
+  const [preferredStartTime, setPreferredStartTime] = useState(
+    data.user.preferences.preferredStartTime || '09:00'
+  );
 
   const handleSaveProfile = async () => {
     setLoading(true);
@@ -71,7 +79,9 @@ export function ProfileContent({ data }: ProfileContentProps) {
           notificationsEnabled,
           theme,
           fontSize,
-          preferredReadingTime
+          preferredReadingTime,
+          preferredTimeOfDay,
+          preferredStartTime
         }),
       });
 
@@ -208,6 +218,36 @@ export function ProfileContent({ data }: ProfileContentProps) {
                   className="w-20"
                 />
                 <span className="text-sm text-muted-foreground">minutes per day</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Time of Day Preference</Label>
+              <Select value={preferredTimeOfDay} onValueChange={setPreferredTimeOfDay}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select time of day" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Morning">Morning</SelectItem>
+                  <SelectItem value="Afternoon">Afternoon</SelectItem>
+                  <SelectItem value="Evening">Evening</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Preferred Start Time</Label>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="time"
+                  value={preferredStartTime}
+                  onChange={(e) => setPreferredStartTime(e.target.value)}
+                  className="w-32"
+                />
+                <span className="text-sm text-muted-foreground">
+                  for your daily reading
+                </span>
               </div>
             </div>
 

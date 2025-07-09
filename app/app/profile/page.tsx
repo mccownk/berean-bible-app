@@ -23,6 +23,8 @@ export default async function ProfilePage() {
       createdAt: true,
       timezone: true,
       preferredReadingTime: true,
+      preferredTimeOfDay: true,
+      preferredStartTime: true,
       notificationsEnabled: true,
       theme: true,
       fontSize: true
@@ -42,6 +44,8 @@ export default async function ProfilePage() {
       preferences: {
         timezone: user.timezone,
         preferredReadingTime: user.preferredReadingTime,
+        preferredTimeOfDay: user.preferredTimeOfDay,
+        preferredStartTime: user.preferredStartTime,
         notificationsEnabled: user.notificationsEnabled,
         theme: user.theme,
         fontSize: user.fontSize
