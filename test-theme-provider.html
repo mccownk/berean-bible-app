@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Provider Test</title>
+    <style>
+        /* Include the same CSS as the actual app */
+        :root {
+            --background: 220 40% 98%;
+            --foreground: 222 47% 11%;
+            --card: 0 0% 100%;
+            --card-foreground: 222 47% 11%;
+        }
+        
+        .dark {
+            --background: 224 71% 4%;
+            --foreground: 213 31% 91%;
+            --card: 224 71% 4%;
+            --card-foreground: 213 31% 91%;
+        }
+        
+        .theme-sepia {
+            --background: 40 50% 96%;
+            --foreground: 30 20% 20%;
+            --card: 42 48% 92%;
+            --card-foreground: 30 20% 20%;
+        }
+        
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .card {
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #2563eb;
+        }
+        
+        .console-output {
+            background-color: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .test-pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .test-fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Theme Provider Functionality Test</h1>
+    
+    <div class="card">
+        <h2>Visual Test</h2>
+        <p>This card should change appearance when themes are switched.</p>
+        <div>
+            <button onclick="runThemeTest('light')">Test Light</button>
+            <button onclick="runThemeTest('dark')">Test Dark</button>
+            <button onclick="runThemeTest('sepia')">Test Sepia</button>
+            <button onclick="runAllTests()">Run All Tests</button>
+        </div>
+    </div>
+    
+    <div id="testResults"></div>
+    
+    <div class="console-output" id="consoleOutput"></div>
+
+    <script>
+        // Custom console to display output on page
+        const consoleOutput = document.getElementById('consoleOutput');
+        const originalConsoleLog = console.log;
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            consoleOutput.textContent += args.join(' ') + '\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        // Mock the next-themes hook
+        const mockNextThemes = {
+            theme: 'light',
+            setTheme: function(newTheme) {
+                console.log('next-themes setTheme called with:', newTheme);
+                this.theme = newTheme;
+                
+                // Simulate next-themes applying the theme
+                if (newTheme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.remove('light');
+                } else if (newTheme === 'light') {
+                    document.documentElement.classList.add('light');
+                    document.documentElement.classList.remove('dark');
+                }
+            },
+            systemTheme: 'light'
+        };
+        
+        // Simulate the useCustomTheme hook behavior
+        function createCustomTheme() {
+            let mounted = true;
+            let currentTheme = 'light';
+            
+            // Simulate the applyTheme function
+            function applyTheme(newTheme) {
+                if (!mounted) return;
+                
+                console.log('applyTheme called with:', newTheme);
+                
+                // Update local state immediately
+                currentTheme = newTheme;
+                
+                // Handle sepia theme as a special case
+                if (newTheme === 'sepia') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('theme-sepia');
+                    mockNextThemes.setTheme('light'); // Use light as base for sepia
+                } else {
+                    document.documentElement.classList.remove('theme-sepia');
+                    mockNextThemes.setTheme(newTheme);
+                }
+                
+                console.log('Current theme state:', currentTheme);
+                console.log('Document classes:', document.documentElement.className);
+            }
+            
+            // Simulate theme detection
+            function getCurrentTheme() {
+                if (document.documentElement.classList.contains('theme-sepia')) {
+                    return 'sepia';
+                }
+                return mockNextThemes.theme || 'light';
+            }
+            
+            return {
+                theme: currentTheme,
+                setTheme: applyTheme,
+                getCurrentTheme: getCurrentTheme
+            };
+        }
+        
+        const themeProvider = createCustomTheme();
+        
+        function runThemeTest(themeName) {
+            console.log(`\n--- Testing ${themeName.toUpperCase()} Theme ---`);
+            
+            themeProvider.setTheme(themeName);
+            const detectedTheme = themeProvider.getCurrentTheme();
+            
+            console.log('Expected theme:', themeName);
+            console.log('Detected theme:', detectedTheme);
+            console.log('Document classes:', document.documentElement.className);
+            
+            const testResults = document.getElementById('testResults');
+            const testResult = document.createElement('div');
+            testResult.className = detectedTheme === themeName ? 'test-result test-pass' : 'test-result test-fail';
+            testResult.textContent = `${themeName.toUpperCase()} Theme Test: ${detectedTheme === themeName ? 'PASS' : 'FAIL'}`;
+            testResults.appendChild(testResult);
+            
+            return detectedTheme === themeName;
+        }
+        
+        function runAllTests() {
+            console.log('🧪 Starting comprehensive theme provider tests...');
+            
+            // Clear previous results
+            document.getElementById('testResults').innerHTML = '';
+            
+            const tests = [
+                () => runThemeTest('light'),
+                () => runThemeTest('dark'),
+                () => runThemeTest('sepia'),
+                () => runThemeTest('light'), // Test switching back to light
+            ];
+            
+            let passedTests = 0;
+            tests.forEach((test, index) => {
+                if (test()) passedTests++;
+            });
+            
+            console.log(`\n✅ Tests completed: ${passedTests}/${tests.length} passed`);
+            
+            if (passedTests === tests.length) {
+                console.log('🎉 All theme switching tests PASSED!');
+                const successResult = document.createElement('div');
+                successResult.className = 'test-result test-pass';
+                successResult.textContent = '🎉 ALL THEME SWITCHING TESTS PASSED!';
+                document.getElementById('testResults').appendChild(successResult);
+            } else {
+                console.log('❌ Some tests failed. Check the results above.');
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Theme Provider Test initialized');
+            console.log('Initial theme:', themeProvider.getCurrentTheme());
+            console.log('Click "Run All Tests" to test theme switching functionality');
+        });
+    </script>
+</body>
+</html>

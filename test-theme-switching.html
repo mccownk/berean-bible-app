@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Switching Test</title>
+    <style>
+        /* Light theme (default) */
+        :root {
+            --background: 220 40% 98%;
+            --foreground: 222 47% 11%;
+            --card: 0 0% 100%;
+            --card-foreground: 222 47% 11%;
+        }
+        
+        /* Dark theme */
+        .dark {
+            --background: 224 71% 4%;
+            --foreground: 213 31% 91%;
+            --card: 224 71% 4%;
+            --card-foreground: 213 31% 91%;
+        }
+        
+        /* Sepia theme */
+        .theme-sepia {
+            --background: 40 50% 96%;
+            --foreground: 30 20% 20%;
+            --card: 42 48% 92%;
+            --card-foreground: 30 20% 20%;
+        }
+        
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .card {
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #2563eb;
+        }
+        
+        .current-theme {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Theme Switching Test</h1>
+    <p>Current theme: <span id="currentTheme" class="current-theme">Light</span></p>
+    
+    <div>
+        <button onclick="setTheme('light')">Light Theme</button>
+        <button onclick="setTheme('dark')">Dark Theme</button>
+        <button onclick="setTheme('sepia')">Sepia Theme</button>
+    </div>
+    
+    <div class="card">
+        <h2>Sample Card</h2>
+        <p>This is a sample card to test theme switching. The background and text colors should change when you switch themes.</p>
+    </div>
+    
+    <div class="card">
+        <h2>Theme Test Results</h2>
+        <p id="results">Click a theme button to test the theme switching functionality.</p>
+    </div>
+
+    <script>
+        function setTheme(theme) {
+            const html = document.documentElement;
+            const currentThemeSpan = document.getElementById('currentTheme');
+            const results = document.getElementById('results');
+            
+            // Remove existing theme classes
+            html.classList.remove('dark', 'theme-sepia');
+            
+            // Apply new theme
+            if (theme === 'sepia') {
+                html.classList.add('theme-sepia');
+                currentThemeSpan.textContent = 'Sepia';
+                results.textContent = 'Sepia theme applied successfully! Background should be warm/cream colored.';
+            } else if (theme === 'dark') {
+                html.classList.add('dark');
+                currentThemeSpan.textContent = 'Dark';
+                results.textContent = 'Dark theme applied successfully! Background should be dark.';
+            } else {
+                currentThemeSpan.textContent = 'Light';
+                results.textContent = 'Light theme applied successfully! Background should be light.';
+            }
+            
+            // Log the current state for debugging
+            console.log('Theme set to:', theme);
+            console.log('HTML classes:', html.classList.toString());
+        }
+        
+        // Test auto-detection
+        function detectCurrentTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('theme-sepia')) {
+                return 'sepia';
+            } else if (html.classList.contains('dark')) {
+                return 'dark';
+            } else {
+                return 'light';
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentTheme = detectCurrentTheme();
+            document.getElementById('currentTheme').textContent = currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1);
+        });
+    </script>
+</body>
+</html>

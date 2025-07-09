@@ -69,19 +69,20 @@ export function ProfileContent({ data }: ProfileContentProps) {
     data.user.preferences.preferredStartTime || '09:00'
   );
 
-  // Apply user's saved theme when component mounts
-  useEffect(() => {
-    if (mounted && data.user.preferences.theme && data.user.preferences.theme !== theme) {
-      setAppTheme(data.user.preferences.theme);
-    }
-  }, [mounted, data.user.preferences.theme, theme, setAppTheme]);
-
-  // Update local theme state when app theme changes
+  // Apply user's saved theme when component mounts and sync local state
   useEffect(() => {
     if (mounted) {
+      const savedTheme = data.user.preferences.theme || 'light';
+      
+      // Apply saved theme if it's different from current theme
+      if (savedTheme !== theme) {
+        setAppTheme(savedTheme);
+      }
+      
+      // Always sync local state with actual theme
       setLocalTheme(theme);
     }
-  }, [theme, mounted]);
+  }, [mounted, data.user.preferences.theme, theme, setAppTheme]);
 
   // Handle theme change immediately
   const handleThemeChange = (newTheme: string) => {

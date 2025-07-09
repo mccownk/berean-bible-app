@@ -12,13 +12,28 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 export function useCustomTheme() {
   const { theme, setTheme, systemTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
+  const [currentTheme, setCurrentTheme] = React.useState<string>('light');
   
   React.useEffect(() => {
     setMounted(true);
   }, []);
   
+  // Sync current theme with next-themes and DOM state
+  React.useEffect(() => {
+    if (!mounted) return;
+    
+    if (document?.documentElement?.classList?.contains('theme-sepia')) {
+      setCurrentTheme('sepia');
+    } else {
+      setCurrentTheme(theme || systemTheme || 'light');
+    }
+  }, [theme, systemTheme, mounted]);
+
   const applyTheme = React.useCallback((newTheme: string) => {
     if (!mounted) return;
+    
+    // Update local state immediately
+    setCurrentTheme(newTheme);
     
     // Handle sepia theme as a special case
     if (newTheme === 'sepia') {
@@ -30,15 +45,6 @@ export function useCustomTheme() {
       setTheme(newTheme);
     }
   }, [setTheme, mounted]);
-
-  const currentTheme = React.useMemo(() => {
-    if (!mounted) return 'light';
-    
-    if (document?.documentElement?.classList?.contains('theme-sepia')) {
-      return 'sepia';
-    }
-    return theme || systemTheme || 'light';
-  }, [theme, systemTheme, mounted]);
 
   return {
     theme: currentTheme,
