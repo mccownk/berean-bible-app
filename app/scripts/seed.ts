@@ -117,366 +117,207 @@ function getOldTestamentReading(day: number): { passages: string[], estimatedMin
   };
 }
 
+// Helper function to generate reading days for a specific book/section
+function generateReadingDays(
+  startDay: number,
+  endDay: number,
+  ntPassages: string[],
+  ntEstimatedMinutes: number,
+  ntRepetitionType: string,
+  phase: number
+) {
+  const days = [];
+  for (let day = startDay; day <= endDay; day++) {
+    const otReading = getOldTestamentReading(day);
+    days.push({
+      day,
+      ntPassages,
+      ntEstimatedMinutes,
+      ntRepetitionType,
+      ntRepetitionCount: 30,
+      phase,
+      otPassages: otReading.passages,
+      otEstimatedMinutes: otReading.estimatedMinutes,
+      otCycle: otReading.cycle
+    });
+  }
+  return days;
+}
+
 // CORRECTED 1,260-day Berean Bible Reading Plan (Dual-track: NT + OT)
 const correctedBereanReadingPlan = [
   // PHASE 1: ESSENTIAL FOUNDATION (Days 1-750)
   
-  // 1 John (Days 1-30) - 30 days for complete book
-  { day: 1, ntPassages: ["1 John 1:1-4"], ntEstimatedMinutes: 2, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 2, ntPassages: ["1 John 1:5-10"], ntEstimatedMinutes: 2, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 3, ntPassages: ["1 John 2:1-6"], ntEstimatedMinutes: 2, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 4, ntPassages: ["1 John 2:7-11"], ntEstimatedMinutes: 2, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 5, ntPassages: ["1 John 2:12-17"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 6, ntPassages: ["1 John 2:18-23"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 7, ntPassages: ["1 John 2:24-29"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 8, ntPassages: ["1 John 3:1-6"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 9, ntPassages: ["1 John 3:7-12"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 10, ntPassages: ["1 John 3:13-18"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 11, ntPassages: ["1 John 3:19-24"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 12, ntPassages: ["1 John 4:1-6"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 13, ntPassages: ["1 John 4:7-12"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 14, ntPassages: ["1 John 4:13-18"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 15, ntPassages: ["1 John 4:19-21"], ntEstimatedMinutes: 2, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 16, ntPassages: ["1 John 5:1-5"], ntEstimatedMinutes: 2, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 17, ntPassages: ["1 John 5:6-12"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 18, ntPassages: ["1 John 5:13-17"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 19, ntPassages: ["1 John 5:18-21"], ntEstimatedMinutes: 2, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 20, ntPassages: ["1 John 1"], ntEstimatedMinutes: 4, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 21, ntPassages: ["1 John 2"], ntEstimatedMinutes: 6, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 22, ntPassages: ["1 John 3"], ntEstimatedMinutes: 6, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 23, ntPassages: ["1 John 4"], ntEstimatedMinutes: 6, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 24, ntPassages: ["1 John 5"], ntEstimatedMinutes: 6, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 25, ntPassages: ["1 John 1-2"], ntEstimatedMinutes: 10, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 26, ntPassages: ["1 John 3-4"], ntEstimatedMinutes: 12, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 27, ntPassages: ["1 John 5"], ntEstimatedMinutes: 6, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 28, ntPassages: ["1 John 1-3"], ntEstimatedMinutes: 16, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 29, ntPassages: ["1 John 4-5"], ntEstimatedMinutes: 12, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 30, ntPassages: ["1 John 1-5"], ntEstimatedMinutes: 20, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
+  // 1 John (Days 1-30) - Read entire book each day for 30 days
+  ...generateReadingDays(1, 30, ["1 John 1-5"], 15, "entire_book", 1),
   
-  // John 1-7 (Days 31-60) - 30 days for John chapters 1-7
-  { day: 31, ntPassages: ["John 1:1-18"], ntEstimatedMinutes: 5, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 32, ntPassages: ["John 1:19-34"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 33, ntPassages: ["John 1:35-51"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 34, ntPassages: ["John 2:1-11"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 35, ntPassages: ["John 2:12-25"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 36, ntPassages: ["John 3:1-21"], ntEstimatedMinutes: 5, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 37, ntPassages: ["John 3:22-36"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 38, ntPassages: ["John 4:1-26"], ntEstimatedMinutes: 6, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 39, ntPassages: ["John 4:27-42"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 40, ntPassages: ["John 4:43-54"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 41, ntPassages: ["John 5:1-18"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 42, ntPassages: ["John 5:19-30"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 43, ntPassages: ["John 5:31-47"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 44, ntPassages: ["John 6:1-15"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 45, ntPassages: ["John 6:16-21"], ntEstimatedMinutes: 2, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 46, ntPassages: ["John 6:22-40"], ntEstimatedMinutes: 5, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 47, ntPassages: ["John 6:41-59"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 48, ntPassages: ["John 6:60-71"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 49, ntPassages: ["John 7:1-24"], ntEstimatedMinutes: 5, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 50, ntPassages: ["John 7:25-36"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 51, ntPassages: ["John 7:37-52"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 52, ntPassages: ["John 1"], ntEstimatedMinutes: 10, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 53, ntPassages: ["John 2"], ntEstimatedMinutes: 8, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 54, ntPassages: ["John 3"], ntEstimatedMinutes: 10, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 55, ntPassages: ["John 4"], ntEstimatedMinutes: 12, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 56, ntPassages: ["John 5"], ntEstimatedMinutes: 12, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 57, ntPassages: ["John 6"], ntEstimatedMinutes: 15, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 58, ntPassages: ["John 7"], ntEstimatedMinutes: 12, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 59, ntPassages: ["John 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 60, ntPassages: ["John 5-7"], ntEstimatedMinutes: 25, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
+  // John 1-7 (Days 31-60) - Read these chapters each day for 30 days
+  ...generateReadingDays(31, 60, ["John 1-7"], 25, "chapters", 1),
   
-  // John 8-14 (Days 61-90) - 30 days for John chapters 8-14
-  { day: 61, ntPassages: ["John 8:1-11"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 62, ntPassages: ["John 8:12-30"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 63, ntPassages: ["John 8:31-47"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 64, ntPassages: ["John 8:48-59"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 65, ntPassages: ["John 9:1-23"], ntEstimatedMinutes: 5, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 66, ntPassages: ["John 9:24-41"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 67, ntPassages: ["John 10:1-18"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 68, ntPassages: ["John 10:19-42"], ntEstimatedMinutes: 5, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 69, ntPassages: ["John 11:1-16"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 70, ntPassages: ["John 11:17-37"], ntEstimatedMinutes: 5, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 71, ntPassages: ["John 11:38-57"], ntEstimatedMinutes: 5, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 72, ntPassages: ["John 12:1-19"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 73, ntPassages: ["John 12:20-36"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 74, ntPassages: ["John 12:37-50"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 75, ntPassages: ["John 13:1-17"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 76, ntPassages: ["John 13:18-30"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 77, ntPassages: ["John 13:31-38"], ntEstimatedMinutes: 2, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 78, ntPassages: ["John 14:1-14"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 79, ntPassages: ["John 14:15-31"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 80, ntPassages: ["John 8"], ntEstimatedMinutes: 12, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 81, ntPassages: ["John 9"], ntEstimatedMinutes: 10, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 82, ntPassages: ["John 10"], ntEstimatedMinutes: 10, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 83, ntPassages: ["John 11"], ntEstimatedMinutes: 15, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 84, ntPassages: ["John 12"], ntEstimatedMinutes: 12, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 85, ntPassages: ["John 13"], ntEstimatedMinutes: 10, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 86, ntPassages: ["John 14"], ntEstimatedMinutes: 8, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 87, ntPassages: ["John 8-10"], ntEstimatedMinutes: 25, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 88, ntPassages: ["John 11-12"], ntEstimatedMinutes: 25, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 89, ntPassages: ["John 13-14"], ntEstimatedMinutes: 18, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 90, ntPassages: ["John 8-14"], ntEstimatedMinutes: 35, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
+  // John 8-14 (Days 61-90) - Read these chapters each day for 30 days
+  ...generateReadingDays(61, 90, ["John 8-14"], 25, "chapters", 1),
   
-  // John 15-21 (Days 91-120) - 30 days for John chapters 15-21
-  { day: 91, ntPassages: ["John 15:1-17"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 92, ntPassages: ["John 15:18-27"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 93, ntPassages: ["John 16:1-15"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 94, ntPassages: ["John 16:16-33"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 95, ntPassages: ["John 17:1-12"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 96, ntPassages: ["John 17:13-26"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 97, ntPassages: ["John 18:1-18"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 98, ntPassages: ["John 18:19-27"], ntEstimatedMinutes: 2, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 99, ntPassages: ["John 18:28-40"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 100, ntPassages: ["John 19:1-16"], ntEstimatedMinutes: 4, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 101, ntPassages: ["John 19:17-30"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 102, ntPassages: ["John 19:31-42"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 103, ntPassages: ["John 20:1-10"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 104, ntPassages: ["John 20:11-23"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 105, ntPassages: ["John 20:24-31"], ntEstimatedMinutes: 2, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 106, ntPassages: ["John 21:1-14"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 107, ntPassages: ["John 21:15-25"], ntEstimatedMinutes: 3, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 108, ntPassages: ["John 15"], ntEstimatedMinutes: 8, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 109, ntPassages: ["John 16"], ntEstimatedMinutes: 8, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 110, ntPassages: ["John 17"], ntEstimatedMinutes: 6, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 111, ntPassages: ["John 18"], ntEstimatedMinutes: 10, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 112, ntPassages: ["John 19"], ntEstimatedMinutes: 10, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 113, ntPassages: ["John 20"], ntEstimatedMinutes: 8, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 114, ntPassages: ["John 21"], ntEstimatedMinutes: 6, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 115, ntPassages: ["John 15-17"], ntEstimatedMinutes: 20, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 116, ntPassages: ["John 18-19"], ntEstimatedMinutes: 20, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 117, ntPassages: ["John 20-21"], ntEstimatedMinutes: 15, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 118, ntPassages: ["John 15-18"], ntEstimatedMinutes: 25, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 119, ntPassages: ["John 19-21"], ntEstimatedMinutes: 25, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
-  { day: 120, ntPassages: ["John 15-21"], ntEstimatedMinutes: 35, ntRepetitionType: "chapters", ntRepetitionCount: 30, phase: 1 },
+  // John 15-21 (Days 91-120) - Read these chapters each day for 30 days
+  ...generateReadingDays(91, 120, ["John 15-21"], 25, "chapters", 1),
   
-  // Philippians (Days 121-150) - 30 days for complete book
-  { day: 121, ntPassages: ["Philippians 1:1-11"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 122, ntPassages: ["Philippians 1:12-18"], ntEstimatedMinutes: 2, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 123, ntPassages: ["Philippians 1:19-26"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 124, ntPassages: ["Philippians 1:27-30"], ntEstimatedMinutes: 2, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 125, ntPassages: ["Philippians 2:1-11"], ntEstimatedMinutes: 4, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 126, ntPassages: ["Philippians 2:12-18"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 127, ntPassages: ["Philippians 2:19-30"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 128, ntPassages: ["Philippians 3:1-11"], ntEstimatedMinutes: 4, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 129, ntPassages: ["Philippians 3:12-21"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 130, ntPassages: ["Philippians 4:1-9"], ntEstimatedMinutes: 3, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 131, ntPassages: ["Philippians 4:10-23"], ntEstimatedMinutes: 4, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 132, ntPassages: ["Philippians 1"], ntEstimatedMinutes: 8, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 133, ntPassages: ["Philippians 2"], ntEstimatedMinutes: 8, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 134, ntPassages: ["Philippians 3"], ntEstimatedMinutes: 8, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 135, ntPassages: ["Philippians 4"], ntEstimatedMinutes: 8, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 136, ntPassages: ["Philippians 1-2"], ntEstimatedMinutes: 15, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 137, ntPassages: ["Philippians 3-4"], ntEstimatedMinutes: 15, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 138, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 139, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 140, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 141, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 142, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 143, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 144, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 145, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 146, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 147, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 148, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 149, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 },
-  { day: 150, ntPassages: ["Philippians 1-4"], ntEstimatedMinutes: 25, ntRepetitionType: "entire_book", ntRepetitionCount: 30, phase: 1 }
+  // Philippians (Days 121-150) - Read entire book each day for 30 days
+  ...generateReadingDays(121, 150, ["Philippians 1-4"], 12, "entire_book", 1),
+  
+  // Romans 1-8 (Days 151-180) - Read these chapters each day for 30 days
+  ...generateReadingDays(151, 180, ["Romans 1-8"], 25, "chapters", 1),
+  
+  // Romans 9-16 (Days 181-210) - Read these chapters each day for 30 days
+  ...generateReadingDays(181, 210, ["Romans 9-16"], 25, "chapters", 1),
+  
+  // Ephesians (Days 211-240) - Read entire book each day for 30 days
+  ...generateReadingDays(211, 240, ["Ephesians 1-6"], 15, "entire_book", 1),
+  
+  // Galatians (Days 241-270) - Read entire book each day for 30 days
+  ...generateReadingDays(241, 270, ["Galatians 1-6"], 12, "entire_book", 1),
+  
+  // Colossians (Days 271-300) - Read entire book each day for 30 days
+  ...generateReadingDays(271, 300, ["Colossians 1-4"], 10, "entire_book", 1),
+  
+  // 1 Thessalonians (Days 301-330) - Read entire book each day for 30 days
+  ...generateReadingDays(301, 330, ["1 Thessalonians 1-5"], 12, "entire_book", 1),
+  
+  // 2 Thessalonians (Days 331-360) - Read entire book each day for 30 days
+  ...generateReadingDays(331, 360, ["2 Thessalonians 1-3"], 8, "entire_book", 1),
+  
+  // 1 Timothy (Days 361-390) - Read entire book each day for 30 days
+  ...generateReadingDays(361, 390, ["1 Timothy 1-6"], 12, "entire_book", 1),
+  
+  // 2 Timothy (Days 391-420) - Read entire book each day for 30 days
+  ...generateReadingDays(391, 420, ["2 Timothy 1-4"], 10, "entire_book", 1),
+  
+  // Titus (Days 421-450) - Read entire book each day for 30 days
+  ...generateReadingDays(421, 450, ["Titus 1-3"], 8, "entire_book", 1),
+  
+  // Philemon (Days 451-480) - Read entire book each day for 30 days
+  ...generateReadingDays(451, 480, ["Philemon 1"], 5, "entire_book", 1),
+  
+  // 1 Peter (Days 481-510) - Read entire book each day for 30 days
+  ...generateReadingDays(481, 510, ["1 Peter 1-5"], 12, "entire_book", 1),
+  
+  // 2 Peter (Days 511-540) - Read entire book each day for 30 days
+  ...generateReadingDays(511, 540, ["2 Peter 1-3"], 8, "entire_book", 1),
+  
+  // 2 John (Days 541-570) - Read entire book each day for 30 days
+  ...generateReadingDays(541, 570, ["2 John 1"], 3, "entire_book", 1),
+  
+  // 3 John (Days 571-600) - Read entire book each day for 30 days
+  ...generateReadingDays(571, 600, ["3 John 1"], 3, "entire_book", 1),
+  
+  // Jude (Days 601-630) - Read entire book each day for 30 days
+  ...generateReadingDays(601, 630, ["Jude 1"], 5, "entire_book", 1),
+  
+  // James (Days 631-660) - Read entire book each day for 30 days
+  ...generateReadingDays(631, 660, ["James 1-5"], 12, "entire_book", 1),
+  
+  // Matthew 1-10 (Days 661-690) - Read these chapters each day for 30 days
+  ...generateReadingDays(661, 690, ["Matthew 1-10"], 30, "chapters", 1),
+  
+  // Matthew 11-20 (Days 691-720) - Read these chapters each day for 30 days
+  ...generateReadingDays(691, 720, ["Matthew 11-20"], 30, "chapters", 1),
+  
+  // Matthew 21-28 (Days 721-750) - Read these chapters each day for 30 days
+  ...generateReadingDays(721, 750, ["Matthew 21-28"], 25, "chapters", 1),
+  
+  // PHASE 2: EXPANSION (Days 751-1080)
+  
+  // Mark 1-8 (Days 751-780) - Read these chapters each day for 30 days
+  ...generateReadingDays(751, 780, ["Mark 1-8"], 25, "chapters", 2),
+  
+  // Mark 9-16 (Days 781-810) - Read these chapters each day for 30 days
+  ...generateReadingDays(781, 810, ["Mark 9-16"], 25, "chapters", 2),
+  
+  // Luke 1-8 (Days 811-840) - Read these chapters each day for 30 days
+  ...generateReadingDays(811, 840, ["Luke 1-8"], 30, "chapters", 2),
+  
+  // Luke 9-16 (Days 841-870) - Read these chapters each day for 30 days
+  ...generateReadingDays(841, 870, ["Luke 9-16"], 30, "chapters", 2),
+  
+  // Luke 17-24 (Days 871-900) - Read these chapters each day for 30 days
+  ...generateReadingDays(871, 900, ["Luke 17-24"], 25, "chapters", 2),
+  
+  // Acts 1-10 (Days 901-930) - Read these chapters each day for 30 days
+  ...generateReadingDays(901, 930, ["Acts 1-10"], 30, "chapters", 2),
+  
+  // Acts 11-20 (Days 931-960) - Read these chapters each day for 30 days
+  ...generateReadingDays(931, 960, ["Acts 11-20"], 30, "chapters", 2),
+  
+  // Acts 21-28 (Days 961-990) - Read these chapters each day for 30 days
+  ...generateReadingDays(961, 990, ["Acts 21-28"], 25, "chapters", 2),
+  
+  // 1 Corinthians 1-8 (Days 991-1020) - Read these chapters each day for 30 days
+  ...generateReadingDays(991, 1020, ["1 Corinthians 1-8"], 25, "chapters", 2),
+  
+  // 1 Corinthians 9-16 (Days 1021-1050) - Read these chapters each day for 30 days
+  ...generateReadingDays(1021, 1050, ["1 Corinthians 9-16"], 25, "chapters", 2),
+  
+  // 2 Corinthians 1-6 (Days 1051-1080) - Read these chapters each day for 30 days
+  ...generateReadingDays(1051, 1080, ["2 Corinthians 1-6"], 20, "chapters", 2),
+  
+  // PHASE 3: COMPLETION (Days 1081-1260)
+  
+  // 2 Corinthians 7-13 (Days 1081-1110) - Read these chapters each day for 30 days
+  ...generateReadingDays(1081, 1110, ["2 Corinthians 7-13"], 20, "chapters", 3),
+  
+  // Hebrews 1-7 (Days 1111-1140) - Read these chapters each day for 30 days
+  ...generateReadingDays(1111, 1140, ["Hebrews 1-7"], 25, "chapters", 3),
+  
+  // Hebrews 8-13 (Days 1141-1170) - Read these chapters each day for 30 days
+  ...generateReadingDays(1141, 1170, ["Hebrews 8-13"], 20, "chapters", 3),
+  
+  // Revelation 1-11 (Days 1171-1200) - Read these chapters each day for 30 days
+  ...generateReadingDays(1171, 1200, ["Revelation 1-11"], 30, "chapters", 3),
+  
+  // Revelation 12-22 (Days 1201-1230) - Read these chapters each day for 30 days
+  ...generateReadingDays(1201, 1230, ["Revelation 12-22"], 25, "chapters", 3),
+  
+  // Complete Review (Days 1231-1260) - Read key passages for review
+  ...generateReadingDays(1231, 1260, ["1 John 1-5", "John 3:16", "Romans 8:28", "Ephesians 2:8-9"], 20, "review", 3),
 ];
 
-// Add OT readings to each day
-const bereanReadingPlanWithOT = correctedBereanReadingPlan.map(day => {
-  const otReading = getOldTestamentReading(day.day);
-  return {
-    ...day,
-    otPassages: otReading.passages,
-    otEstimatedMinutes: otReading.estimatedMinutes,
-    otCycle: otReading.cycle,
-    totalEstimatedMinutes: day.ntEstimatedMinutes + otReading.estimatedMinutes
-  };
-});
-
-// Continue with Phase 1 (Days 151-750) - Romans 1-8, Romans 9-16, Ephesians, Matthew 1-10, Matthew 11-20, Matthew 21-28, etc.
-
-// Romans 1-8 (Days 151-180) - 30 days for Romans chapters 1-8
-const romansPhase1Data: any[] = [];
-for (let day = 151; day <= 180; day++) {
-  const dayInSection = day - 150;
-  if (dayInSection <= 24) {
-    // Individual verses for first 24 days
-    const romans1to8Verses = [
-      "Romans 1:1-17", "Romans 1:18-32", "Romans 2:1-16", "Romans 2:17-29",
-      "Romans 3:1-20", "Romans 3:21-31", "Romans 4:1-12", "Romans 4:13-25",
-      "Romans 5:1-11", "Romans 5:12-21", "Romans 6:1-14", "Romans 6:15-23",
-      "Romans 7:1-6", "Romans 7:7-25", "Romans 8:1-17", "Romans 8:18-27",
-      "Romans 8:28-39", "Romans 1", "Romans 2", "Romans 3",
-      "Romans 4", "Romans 5", "Romans 6", "Romans 7"
-    ];
-    romansPhase1Data.push({
-      day: day,
-      ntPassages: [romans1to8Verses[dayInSection - 1]],
-      ntEstimatedMinutes: dayInSection <= 17 ? 4 : 8,
-      ntRepetitionType: "chapters",
-      ntRepetitionCount: 30,
-      phase: 1
-    });
-  } else {
-    // Larger sections for last 6 days
-    const largeSections = [
-      "Romans 8", "Romans 1-2", "Romans 3-4", "Romans 5-6", "Romans 7-8", "Romans 1-8"
-    ];
-    romansPhase1Data.push({
-      day: day,
-      ntPassages: [largeSections[dayInSection - 25]],
-      ntEstimatedMinutes: dayInSection === 30 ? 35 : 15,
-      ntRepetitionType: "chapters",
-      ntRepetitionCount: 30,
-      phase: 1
-    });
-  }
-}
-
-// Romans 9-16 (Days 181-210) - 30 days for Romans chapters 9-16
-const romansPhase2Data: any[] = [];
-for (let day = 181; day <= 210; day++) {
-  const dayInSection = day - 180;
-  if (dayInSection <= 24) {
-    const romans9to16Verses = [
-      "Romans 9:1-13", "Romans 9:14-29", "Romans 9:30-33", "Romans 10:1-13",
-      "Romans 10:14-21", "Romans 11:1-10", "Romans 11:11-24", "Romans 11:25-36",
-      "Romans 12:1-8", "Romans 12:9-21", "Romans 13:1-7", "Romans 13:8-14",
-      "Romans 14:1-12", "Romans 14:13-23", "Romans 15:1-13", "Romans 15:14-21",
-      "Romans 15:22-33", "Romans 16:1-16", "Romans 16:17-27", "Romans 9",
-      "Romans 10", "Romans 11", "Romans 12", "Romans 13"
-    ];
-    romansPhase2Data.push({
-      day: day,
-      ntPassages: [romans9to16Verses[dayInSection - 1]],
-      ntEstimatedMinutes: dayInSection <= 19 ? 3 : 8,
-      ntRepetitionType: "chapters",
-      ntRepetitionCount: 30,
-      phase: 1
-    });
-  } else {
-    const largeSections = [
-      "Romans 14", "Romans 15", "Romans 16", "Romans 14-16", "Romans 12-16", "Romans 9-16"
-    ];
-    romansPhase2Data.push({
-      day: day,
-      ntPassages: [largeSections[dayInSection - 25]],
-      ntEstimatedMinutes: dayInSection === 30 ? 35 : 15,
-      ntRepetitionType: "chapters",
-      ntRepetitionCount: 30,
-      phase: 1
-    });
-  }
-}
-
-// Generate complete 1,260-day plan programmatically due to size
-const generateCompleteReadingPlan = () => {
-  const completePlan = [...correctedBereanReadingPlan, ...romansPhase1Data, ...romansPhase2Data];
+async function main() {
+  console.log('🌱 Starting seed process...');
   
-  // Add remaining Phase 1 books (Ephesians, Matthew, Acts, Mark, Luke, 1 Corinthians, Hebrews, Galatians - Days 211-750)
-  // Add Phase 2 books (1 Corinthians through Philemon - Days 751-1080)
-  // Add Phase 3 books (2 John through Revelation - Days 1081-1260)
-  
-  // For brevity in this implementation, I'll create a pattern for the remaining days
-  for (let day = 211; day <= 1260; day++) {
-    let phase = 1;
-    if (day > 750) phase = 2;
-    if (day > 1080) phase = 3;
-    
-    // Simplified pattern for remaining days
-    let bookName = "Matthew";
-    let estimatedMinutes = 8;
-    
-    if (day >= 211 && day <= 240) bookName = "Ephesians";
-    else if (day >= 241 && day <= 330) bookName = "Matthew";
-    else if (day >= 331 && day <= 420) bookName = "Acts";
-    else if (day >= 421 && day <= 480) bookName = "Mark";
-    else if (day >= 481 && day <= 570) bookName = "Luke";
-    else if (day >= 571 && day <= 630) bookName = "1 Corinthians";
-    else if (day >= 631 && day <= 690) bookName = "Hebrews";
-    else if (day >= 691 && day <= 750) bookName = "Galatians";
-    // Phase 2
-    else if (day >= 751 && day <= 810) bookName = "2 Corinthians";
-    else if (day >= 811 && day <= 870) bookName = "1 Timothy";
-    else if (day >= 871 && day <= 930) bookName = "2 Timothy";
-    else if (day >= 931 && day <= 990) bookName = "Titus";
-    else if (day >= 991 && day <= 1050) bookName = "1 Peter";
-    else if (day >= 1051 && day <= 1080) bookName = "Philemon";
-    // Phase 3
-    else if (day >= 1081 && day <= 1110) bookName = "2 John";
-    else if (day >= 1111 && day <= 1140) bookName = "3 John";
-    else if (day >= 1141 && day <= 1170) bookName = "Jude";
-    else if (day >= 1171 && day <= 1200) bookName = "2 Peter";
-    else if (day >= 1201 && day <= 1230) bookName = "James";
-    else if (day >= 1231 && day <= 1260) bookName = "Revelation";
-    
-    completePlan.push({
-      day: day,
-      ntPassages: [`${bookName} 1`],
-      ntEstimatedMinutes: estimatedMinutes,
-      ntRepetitionType: "chapters",
-      ntRepetitionCount: 30,
-      phase: phase
-    });
-  }
-  
-  return completePlan;
-};
-
-const completeReadingPlan = generateCompleteReadingPlan();
-
-// Add OT readings to complete plan
-const completeBereanPlanWithOT = completeReadingPlan.map(day => {
-  const otReading = getOldTestamentReading(day.day);
-  return {
-    ...day,
-    otPassages: otReading.passages,
-    otEstimatedMinutes: otReading.estimatedMinutes,
-    otCycle: otReading.cycle,
-    totalEstimatedMinutes: day.ntEstimatedMinutes + otReading.estimatedMinutes
-  };
-});
-
-async function seed() {
   try {
-    console.log('🌱 Starting seed process...');
-
     // Clear existing data
     console.log('🧹 Clearing existing data...');
-    await prisma.readingProgress.deleteMany();
-    await prisma.note.deleteMany();
-    await prisma.dailyReading.deleteMany();
-    await prisma.readingPlan.deleteMany();
-    await prisma.userAchievement.deleteMany();
-    await prisma.achievement.deleteMany();
-    await prisma.readingStreak.deleteMany();
-    await prisma.user.deleteMany();
-
+    await prisma.readingProgress.deleteMany({});
+    await prisma.note.deleteMany({});
+    await prisma.dailyReading.deleteMany({});
+    await prisma.readingPlan.deleteMany({});
+    await prisma.userAchievement.deleteMany({});
+    await prisma.achievement.deleteMany({});
+    await prisma.readingStreak.deleteMany({});
+    await prisma.user.deleteMany({});
+    
     // Create demo user
     console.log('👤 Creating demo user...');
-    const hashedPassword = await bcrypt.hash('johndoe123', 12);
+    const hashedPassword = await bcrypt.hash('johndoe123', 10);
     const demoUser = await prisma.user.create({
       data: {
+        name: 'John Doe',
         email: 'john@doe.com',
         password: hashedPassword,
-        name: 'John Doe',
         timezone: 'UTC',
-        preferredReadingTime: 20,
+        preferredReadingTime: 30,
         preferredTimeOfDay: 'Morning',
-        preferredStartTime: '08:00',
+        preferredStartTime: '09:00',
         notificationsEnabled: true,
         theme: 'light',
-        fontSize: 'medium'
-      }
+        fontSize: 'medium',
+      },
     });
-
-    // Create the main reading plan
-    console.log('📖 Creating reading plan...');
+    
+    // Create the Berean Bible Reading Plan
+    console.log('📖 Creating Berean Bible Reading Plan...');
     const readingPlan = await prisma.readingPlan.create({
       data: {
-        name: 'The Berean Bible Reading Plan',
-        description: 'A 1,260-day (3.5 year) dual-track Bible reading plan featuring sequential New Testament study with simultaneous Old Testament reading. Phase 1: Essential Foundation (750 days), Phase 2: Expansion (330 days), Phase 3: Completion (180 days).',
+        name: 'Berean Bible Reading Plan',
+        description: 'A 1,260-day dual-track reading plan focusing on New Testament repetition and Old Testament progression through sequential book completion.',
         totalDays: 1260,
         totalYears: 3.5,
         phase1EndDay: 750,
@@ -484,130 +325,107 @@ async function seed() {
         phase3EndDay: 1260,
         otCycleDays: 365,
         otTotalCycles: 3.5,
-        isActive: true
-      }
+        isActive: true,
+      },
     });
-
+    
     // Create daily readings
     console.log('📚 Creating daily readings...');
-    const batchSize = 100;
-    for (let i = 0; i < completeBereanPlanWithOT.length; i += batchSize) {
-      const batch = completeBereanPlanWithOT.slice(i, i + batchSize);
-      await prisma.dailyReading.createMany({
-        data: batch.map(reading => ({
+    const dailyReadings = [];
+    
+    for (const dayData of correctedBereanReadingPlan) {
+      const otReading = getOldTestamentReading(dayData.day);
+      
+      const dailyReading = await prisma.dailyReading.create({
+        data: {
           planId: readingPlan.id,
-          day: reading.day,
-          phase: reading.phase,
-          ntPassages: reading.ntPassages,
-          ntEstimatedMinutes: reading.ntEstimatedMinutes,
-          ntRepetitionType: reading.ntRepetitionType,
-          ntRepetitionCount: reading.ntRepetitionCount,
-          otPassages: reading.otPassages,
-          otEstimatedMinutes: reading.otEstimatedMinutes,
-          otCycle: reading.otCycle,
-          totalEstimatedMinutes: reading.totalEstimatedMinutes
-        }))
+          day: dayData.day,
+          phase: dayData.phase,
+          ntPassages: dayData.ntPassages,
+          ntEstimatedMinutes: dayData.ntEstimatedMinutes,
+          ntRepetitionType: dayData.ntRepetitionType,
+          ntRepetitionCount: dayData.ntRepetitionCount,
+          otPassages: otReading.passages,
+          otEstimatedMinutes: otReading.estimatedMinutes,
+          otCycle: otReading.cycle,
+          totalEstimatedMinutes: dayData.ntEstimatedMinutes + otReading.estimatedMinutes,
+        },
       });
-      console.log(`   ✅ Created daily readings ${i + 1}-${Math.min(i + batchSize, completeBereanPlanWithOT.length)}`);
+      
+      dailyReadings.push(dailyReading);
     }
-
-    // Create achievements
+    
+    // Create reading streak record for demo user
+    console.log('🔥 Creating reading streak record...');
+    await prisma.readingStreak.create({
+      data: {
+        userId: demoUser.id,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastReadingDate: null,
+      },
+    });
+    
+    // Create some achievements
     console.log('🏆 Creating achievements...');
     const achievements = [
       {
-        name: 'First Steps',
+        name: 'First Day',
         description: 'Complete your first day of reading',
         icon: '🎯',
         requiredCount: 1,
-        category: 'milestone'
+        category: 'milestone',
       },
       {
         name: 'Week Warrior',
         description: 'Complete 7 consecutive days of reading',
         icon: '🔥',
         requiredCount: 7,
-        category: 'streak'
+        category: 'streak',
       },
       {
         name: 'Monthly Master',
         description: 'Complete 30 consecutive days of reading',
-        icon: '📅',
+        icon: '🌟',
         requiredCount: 30,
-        category: 'streak'
+        category: 'streak',
       },
       {
-        name: '1 John Completed',
-        description: 'Complete the 30-day 1 John study (Days 1-30)',
-        icon: '💝',
-        requiredCount: 30,
-        category: 'completion'
-      },
-      {
-        name: 'John 1-7 Mastery',
-        description: 'Complete John chapters 1-7 (Days 31-60)',
-        icon: '✨',
-        requiredCount: 60,
-        category: 'completion'
-      },
-      {
-        name: 'Gospel Foundation',
-        description: 'Complete the entire Gospel of John (Days 31-120)',
-        icon: '📖',
-        requiredCount: 120,
-        category: 'completion'
-      },
-      {
-        name: 'Phase 1 Champion',
-        description: 'Complete Phase 1: Essential Foundation (750 days)',
-        icon: '🏅',
+        name: 'Phase 1 Pioneer',
+        description: 'Complete Phase 1 of the reading plan',
+        icon: '🚀',
         requiredCount: 750,
-        category: 'completion'
+        category: 'milestone',
       },
       {
-        name: 'Phase 2 Expert',
-        description: 'Complete Phase 2: Expansion (1080 days total)',
-        icon: '🎖️',
-        requiredCount: 1080,
-        category: 'completion'
+        name: 'Century Club',
+        description: 'Complete 100 days of reading',
+        icon: '💯',
+        requiredCount: 100,
+        category: 'completion',
       },
-      {
-        name: 'Berean Graduate',
-        description: 'Complete the entire 1,260-day Berean Bible Reading Plan',
-        icon: '👑',
-        requiredCount: 1260,
-        category: 'completion'
-      }
     ];
-
-    await prisma.achievement.createMany({
-      data: achievements
-    });
-
-    // Initialize reading streak for demo user
-    await prisma.readingStreak.create({
-      data: {
-        userId: demoUser.id,
-        currentStreak: 0,
-        longestStreak: 0
-      }
-    });
-
+    
+    for (const achievement of achievements) {
+      await prisma.achievement.create({
+        data: achievement,
+      });
+    }
+    
     console.log('✅ Seed completed successfully!');
-    console.log(`   📊 Created ${completeBereanPlanWithOT.length} daily readings`);
-    console.log(`   🏆 Created ${achievements.length} achievements`);
-    console.log(`   👤 Demo user: john@doe.com / johndoe123`);
-
+    console.log(`📊 Created ${dailyReadings.length} daily readings`);
+    console.log(`👤 Demo user: john@doe.com / johndoe123`);
+    
   } catch (error) {
-    console.error('❌ Seed failed:', error);
+    console.error('❌ Error during seed:', error);
     throw error;
   } finally {
     await prisma.$disconnect();
   }
 }
 
-// Run the seed function
-seed()
-  .catch((error) => {
-    console.error(error);
+main()
+  .catch((e) => {
+    console.error(e);
     process.exit(1);
   });
