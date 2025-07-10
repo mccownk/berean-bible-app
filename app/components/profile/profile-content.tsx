@@ -11,8 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useCustomTheme } from '@/components/theme-provider';
-import { getPopularTranslations } from '@/lib/bible-api';
-import type { BibleTranslation } from '@/lib/bible-api';
+import { TranslationSelectorWrapper } from '@/components/ui/translation-selector-wrapper';
 import { 
   User, 
   Settings, 
@@ -22,8 +21,7 @@ import {
   Clock,
   LogOut,
   Save,
-  Loader2,
-  BookOpen
+  Loader2
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -73,47 +71,8 @@ export function ProfileContent({ data }: ProfileContentProps) {
     data.user.preferences.preferredStartTime || '09:00'
   );
   const [preferredTranslation, setPreferredTranslation] = useState(
-    data.user.preferences.preferredTranslation || 'bba9f40183526463-01'
+    data.user.preferences.preferredTranslation || 'ESV'
   );
-
-  // Available translations state
-  const [availableTranslations, setAvailableTranslations] = useState<BibleTranslation[]>([]);
-  const [loadingTranslations, setLoadingTranslations] = useState(true);
-
-  // Load available translations
-  useEffect(() => {
-    const loadTranslations = async () => {
-      try {
-        const translations = await getPopularTranslations();
-        setAvailableTranslations(translations);
-      } catch (error) {
-        console.error('Error loading translations:', error);
-        // Fallback to basic translations
-        setAvailableTranslations([
-          { 
-            id: 'ESV', 
-            abbreviation: 'ESV', 
-            name: 'English Standard Version',
-            language: { id: 'eng', name: 'English', nameLocal: 'English', script: 'Latin', scriptDirection: 'LTR' },
-            category: 'popular' as const,
-            source: 'esv' as const
-          },
-          { 
-            id: 'bba9f40183526463-01', 
-            abbreviation: 'BSB', 
-            name: 'Berean Standard Bible',
-            language: { id: 'eng', name: 'English', nameLocal: 'English', script: 'Latin', scriptDirection: 'LTR' },
-            category: 'popular' as const,
-            source: 'api_bible' as const
-          },
-        ]);
-      } finally {
-        setLoadingTranslations(false);
-      }
-    };
-
-    loadTranslations();
-  }, []);
 
   // Apply user's saved theme when component mounts
   useEffect(() => {
@@ -352,27 +311,13 @@ export function ProfileContent({ data }: ProfileContentProps) {
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Bible Translation
-              </Label>
-              <Select value={preferredTranslation} onValueChange={setPreferredTranslation}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a Bible translation" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableTranslations.map((translation) => (
-                    <SelectItem key={translation.id} value={translation.id}>
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium">{translation.abbreviation}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {translation.name}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <TranslationSelectorWrapper
+                selectedTranslation={preferredTranslation}
+                onTranslationChange={setPreferredTranslation}
+                userId={data.user.id}
+                showDescription={false}
+                className="w-full"
+              />
               <p className="text-xs text-muted-foreground">
                 Choose your preferred Bible translation for reading
               </p>
