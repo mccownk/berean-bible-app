@@ -14,20 +14,82 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { progressId, readingTimeSeconds } = await request.json();
+    const { 
+      progressId, 
+      section, 
+      ntReadingTimeSeconds, 
+      otReadingTimeSeconds, 
+      totalReadingTimeSeconds,
+      // Legacy support
+      readingTimeSeconds 
+    } = await request.json();
 
     if (!progressId) {
       return NextResponse.json({ message: 'Progress ID is required' }, { status: 400 });
     }
 
+    // Get current progress
+    const currentProgress = await prisma.readingProgress.findUnique({
+      where: { id: progressId },
+      include: { dailyReading: true }
+    });
+
+    if (!currentProgress) {
+      return NextResponse.json({ message: 'Progress not found' }, { status: 404 });
+    }
+
+    let updateData: any = {};
+    const now = new Date();
+
+    if (section === 'nt') {
+      // Complete only NT portion
+      updateData = {
+        ntCompleted: true,
+        ntCompletedAt: now,
+        ntReadingTimeSeconds: ntReadingTimeSeconds || null,
+        totalReadingTimeSeconds: totalReadingTimeSeconds || null
+      };
+      
+      // Check if both NT and OT are now completed
+      if (currentProgress.otCompleted || !currentProgress.dailyReading.otPassages?.length) {
+        updateData.isCompleted = true;
+        updateData.completedAt = now;
+      }
+    } else if (section === 'ot') {
+      // Complete only OT portion
+      updateData = {
+        otCompleted: true,
+        otCompletedAt: now,
+        otReadingTimeSeconds: otReadingTimeSeconds || null,
+        totalReadingTimeSeconds: totalReadingTimeSeconds || null
+      };
+      
+      // Check if both NT and OT are now completed
+      if (currentProgress.ntCompleted || !currentProgress.dailyReading.ntPassages?.length) {
+        updateData.isCompleted = true;
+        updateData.completedAt = now;
+      }
+    } else {
+      // Complete both sections (legacy behavior or explicit complete all)
+      updateData = {
+        ntCompleted: true,
+        ntCompletedAt: now,
+        ntReadingTimeSeconds: ntReadingTimeSeconds || null,
+        otCompleted: true,
+        otCompletedAt: now,
+        otReadingTimeSeconds: otReadingTimeSeconds || null,
+        isCompleted: true,
+        completedAt: now,
+        totalReadingTimeSeconds: totalReadingTimeSeconds || readingTimeSeconds || null,
+        // Legacy support
+        readingTimeSeconds: totalReadingTimeSeconds || readingTimeSeconds || null
+      };
+    }
+
     // Update reading progress
     const updatedProgress = await prisma.readingProgress.update({
       where: { id: progressId },
-      data: {
-        isCompleted: true,
-        completedAt: new Date(),
-        readingTimeSeconds: readingTimeSeconds || null,
-      },
+      data: updateData,
       include: {
         dailyReading: true
       }

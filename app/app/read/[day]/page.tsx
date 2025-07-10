@@ -22,7 +22,7 @@ export default async function ReadingPage({ params }: ReadingPageProps) {
 
   const day = parseInt(params.day);
   
-  if (isNaN(day) || day < 1 || day > 750) {
+  if (isNaN(day) || day < 1 || day > 1260) {
     redirect('/dashboard');
   }
 
@@ -65,15 +65,18 @@ export default async function ReadingPage({ params }: ReadingPageProps) {
         userId: session.user.id,
         planId: plan.id,
         readingId: dailyReading.id,
-        currentCycle: 1,
-        isCompleted: false
+        currentPhase: dailyReading.phase || 1,
+        otCycle: dailyReading.otCycle || 1,
+        isCompleted: false,
+        ntCompleted: false,
+        otCompleted: false
       }
     });
   }
 
   // Get adjacent readings for navigation
-  const previousDay = day > 1 ? day - 1 : 750;
-  const nextDay = day < 750 ? day + 1 : 1;
+  const previousDay = day > 1 ? day - 1 : 1260;
+  const nextDay = day < 1260 ? day + 1 : 1;
 
   const previousReading = await prisma.dailyReading.findFirst({
     where: { planId: plan.id, day: previousDay }
@@ -92,15 +95,40 @@ export default async function ReadingPage({ params }: ReadingPageProps) {
     reading: {
       id: dailyReading.id,
       day: dailyReading.day,
-      passages: dailyReading.passages,
-      estimatedMinutes: dailyReading.estimatedMinutes
+      phase: dailyReading.phase,
+      // New Testament readings
+      ntPassages: dailyReading.ntPassages || [],
+      ntEstimatedMinutes: dailyReading.ntEstimatedMinutes,
+      ntRepetitionType: dailyReading.ntRepetitionType,
+      ntRepetitionCount: dailyReading.ntRepetitionCount,
+      // Old Testament readings
+      otPassages: dailyReading.otPassages || [],
+      otEstimatedMinutes: dailyReading.otEstimatedMinutes,
+      otCycle: dailyReading.otCycle,
+      // Combined
+      totalEstimatedMinutes: dailyReading.totalEstimatedMinutes,
+      // Legacy support (fallback to old fields if they exist)
+      passages: [...(dailyReading.ntPassages || []), ...(dailyReading.otPassages || [])],
+      estimatedMinutes: dailyReading.totalEstimatedMinutes
     },
     progress: {
       id: progress.id,
+      // Combined progress
       isCompleted: progress.isCompleted,
       completedAt: progress.completedAt,
-      readingTimeSeconds: progress.readingTimeSeconds,
-      currentCycle: progress.currentCycle
+      totalReadingTimeSeconds: progress.totalReadingTimeSeconds,
+      currentPhase: progress.currentPhase || 1,
+      otCycle: progress.otCycle || 1,
+      // Individual progress
+      ntCompleted: progress.ntCompleted || false,
+      ntCompletedAt: progress.ntCompletedAt,
+      ntReadingTimeSeconds: progress.ntReadingTimeSeconds,
+      otCompleted: progress.otCompleted || false,
+      otCompletedAt: progress.otCompletedAt,
+      otReadingTimeSeconds: progress.otReadingTimeSeconds,
+      // Legacy support
+      readingTimeSeconds: progress.totalReadingTimeSeconds,
+      currentCycle: progress.otCycle || 1
     },
     notes: dailyReading.notes.map(note => ({
       id: note.id,

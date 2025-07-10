@@ -36,8 +36,9 @@ export async function GET(request: NextRequest) {
           dailyReading: {
             select: {
               day: true,
-              passages: true,
-              estimatedMinutes: true
+              ntPassages: true,
+              otPassages: true,
+              totalEstimatedMinutes: true
             }
           }
         },
@@ -49,7 +50,8 @@ export async function GET(request: NextRequest) {
           dailyReading: {
             select: {
               day: true,
-              passages: true
+              ntPassages: true,
+              otPassages: true
             }
           }
         },
@@ -89,17 +91,17 @@ export async function GET(request: NextRequest) {
       },
       readingProgress: progress.map(p => ({
         day: p.dailyReading.day,
-        passages: p.dailyReading.passages,
-        estimatedMinutes: p.dailyReading.estimatedMinutes,
+        passages: [...(p.dailyReading.ntPassages || []), ...(p.dailyReading.otPassages || [])],
+        estimatedMinutes: p.dailyReading.totalEstimatedMinutes,
         isCompleted: p.isCompleted,
         completedAt: p.completedAt,
-        readingTimeSeconds: p.readingTimeSeconds,
-        currentCycle: p.currentCycle,
+        readingTimeSeconds: p.totalReadingTimeSeconds,
+        currentCycle: p.otCycle,
         createdAt: p.createdAt
       })),
       notes: notes.map(n => ({
         day: n.dailyReading.day,
-        passages: n.dailyReading.passages,
+        passages: [...(n.dailyReading.ntPassages || []), ...(n.dailyReading.otPassages || [])],
         content: n.content,
         createdAt: n.createdAt,
         updatedAt: n.updatedAt
@@ -119,8 +121,8 @@ export async function GET(request: NextRequest) {
         totalDaysCompleted: progress.filter(p => p.isCompleted).length,
         totalNotes: notes.length,
         totalAchievements: achievements.length,
-        averageReadingTime: progress.filter(p => p.readingTimeSeconds).length > 0 
-          ? Math.round(progress.filter(p => p.readingTimeSeconds).reduce((sum, p) => sum + (p.readingTimeSeconds || 0), 0) / progress.filter(p => p.readingTimeSeconds).length)
+        averageReadingTime: progress.filter(p => p.totalReadingTimeSeconds).length > 0 
+          ? Math.round(progress.filter(p => p.totalReadingTimeSeconds).reduce((sum, p) => sum + (p.totalReadingTimeSeconds || 0), 0) / progress.filter(p => p.totalReadingTimeSeconds).length)
           : 0
       }
     };

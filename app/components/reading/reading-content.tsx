@@ -33,15 +33,40 @@ interface ReadingData {
   reading: {
     id: string;
     day: number;
-    passages: string[];
-    estimatedMinutes: number | null;
+    phase: number;
+    // New Testament readings
+    ntPassages: string[];
+    ntEstimatedMinutes: number | null;
+    ntRepetitionType: string;
+    ntRepetitionCount: number;
+    // Old Testament readings
+    otPassages: string[];
+    otEstimatedMinutes: number | null;
+    otCycle: number;
+    // Combined
+    totalEstimatedMinutes: number | null;
+    // Legacy support
+    passages?: string[];
+    estimatedMinutes?: number | null;
   };
   progress: {
     id: string;
+    // Combined progress
     isCompleted: boolean;
     completedAt: Date | null;
-    readingTimeSeconds: number | null;
-    currentCycle: number;
+    totalReadingTimeSeconds: number | null;
+    currentPhase: number;
+    otCycle: number;
+    // Individual progress
+    ntCompleted: boolean;
+    ntCompletedAt: Date | null;
+    ntReadingTimeSeconds: number | null;
+    otCompleted: boolean;
+    otCompletedAt: Date | null;
+    otReadingTimeSeconds: number | null;
+    // Legacy support
+    readingTimeSeconds?: number | null;
+    currentCycle?: number;
   };
   notes: Array<{
     id: string;
@@ -60,32 +85,49 @@ interface ReadingContentProps {
 }
 
 export function ReadingContent({ data }: ReadingContentProps) {
-  const [bibleText, setBibleText] = useState<string>('');
+  const [ntBibleText, setNtBibleText] = useState<string>('');
+  const [otBibleText, setOtBibleText] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [markingComplete, setMarkingComplete] = useState(false);
   const [noteContent, setNoteContent] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [readingTimer, setReadingTimer] = useState(0);
+  const [ntTimer, setNtTimer] = useState(0);
+  const [otTimer, setOtTimer] = useState(0);
   const [isReading, setIsReading] = useState(false);
+  const [activeSection, setActiveSection] = useState<'nt' | 'ot' | 'both'>('both');
   const { toast } = useToast();
   const router = useRouter();
 
-  // Load Bible text
+  // Backward compatibility: extract passages from new or legacy format
+  const ntPassages = data.reading.ntPassages || data.reading.passages || [];
+  const otPassages = data.reading.otPassages || [];
+  const allPassages = [...ntPassages, ...otPassages];
+
+  // Load Bible text for both NT and OT
   useEffect(() => {
     const fetchBibleText = async () => {
       try {
-        const response = await fetch(`/api/bible/passage?passages=${data.reading.passages.join(',')}`);
-        const result = await response.json();
+        setLoading(true);
         
-        if (response.ok) {
-          setBibleText(result.content);
-        } else {
-          toast({
-            title: "Error loading Bible text",
-            description: "Please try again later.",
-            variant: "destructive",
-          });
+        // Fetch NT text
+        if (ntPassages.length > 0) {
+          const ntResponse = await fetch(`/api/bible/passage?passages=${ntPassages.join(',')}`);
+          const ntResult = await ntResponse.json();
+          if (ntResponse.ok) {
+            setNtBibleText(ntResult.content);
+          }
         }
+        
+        // Fetch OT text
+        if (otPassages.length > 0) {
+          const otResponse = await fetch(`/api/bible/passage?passages=${otPassages.join(',')}`);
+          const otResult = await otResponse.json();
+          if (otResponse.ok) {
+            setOtBibleText(otResult.content);
+          }
+        }
+        
       } catch (error) {
         toast({
           title: "Error loading Bible text",
@@ -98,7 +140,7 @@ export function ReadingContent({ data }: ReadingContentProps) {
     };
 
     fetchBibleText();
-  }, [data.reading.passages, toast]);
+  }, [ntPassages, otPassages, toast]);
 
   // Reading timer
   useEffect(() => {
@@ -107,11 +149,19 @@ export function ReadingContent({ data }: ReadingContentProps) {
     if (isReading) {
       interval = setInterval(() => {
         setReadingTimer(prev => prev + 1);
+        
+        // Update individual timers based on active section
+        if (activeSection === 'nt' || activeSection === 'both') {
+          setNtTimer(prev => prev + 1);
+        }
+        if (activeSection === 'ot' || activeSection === 'both') {
+          setOtTimer(prev => prev + 1);
+        }
       }, 1000);
     }
     
     return () => clearInterval(interval);
-  }, [isReading]);
+  }, [isReading, activeSection]);
 
   // Auto-start reading timer when page loads
   useEffect(() => {
@@ -120,7 +170,7 @@ export function ReadingContent({ data }: ReadingContentProps) {
     }
   }, [data.progress.isCompleted, loading]);
 
-  const handleMarkComplete = async () => {
+  const handleMarkComplete = async (section?: 'nt' | 'ot') => {
     setMarkingComplete(true);
     
     try {
@@ -129,20 +179,30 @@ export function ReadingContent({ data }: ReadingContentProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           progressId: data.progress.id,
-          readingTimeSeconds: readingTimer
+          section: section,
+          ntReadingTimeSeconds: ntTimer,
+          otReadingTimeSeconds: otTimer,
+          totalReadingTimeSeconds: readingTimer
         }),
       });
 
       if (response.ok) {
-        toast({
-          title: "Reading completed! 🎉",
-          description: "Great job on your daily Scripture reading.",
-        });
-        
-        // Navigate to dashboard after a short delay
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1500);
+        if (section) {
+          toast({
+            title: `${section.toUpperCase()} reading completed! 🎉`,
+            description: `Great job on completing the ${section === 'nt' ? 'New Testament' : 'Old Testament'} portion.`,
+          });
+        } else {
+          toast({
+            title: "Reading completed! 🎉",
+            description: "Great job on your daily Scripture reading.",
+          });
+          
+          // Navigate to dashboard after a short delay for full completion
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 1500);
+        }
       } else {
         throw new Error('Failed to mark reading as complete');
       }
@@ -158,9 +218,13 @@ export function ReadingContent({ data }: ReadingContentProps) {
   };
 
   const handleShare = async () => {
+    const ntText = ntPassages.length > 0 ? `NT: ${ntPassages.join(', ')}` : '';
+    const otText = otPassages.length > 0 ? `OT: ${otPassages.join(', ')}` : '';
+    const readingText = [ntText, otText].filter(Boolean).join(' | ');
+    
     const shareData = {
-      title: `Day ${data.reading.day}: ${data.reading.passages.join(', ')}`,
-      text: `I'm reading ${data.reading.passages.join(', ')} today as part of my 750-day Berean Bible journey!`,
+      title: `Day ${data.reading.day}: ${readingText}`,
+      text: `I'm reading ${readingText} today as part of my 1,260-day Berean Bible journey! (Phase ${data.reading.phase})`,
       url: window.location.href,
     };
 
@@ -212,8 +276,9 @@ export function ReadingContent({ data }: ReadingContentProps) {
     }
   };
 
-  const currentPhase = getCurrentPhase(data.reading.day);
+  const currentPhase = data.reading.phase || getCurrentPhase(data.reading.day);
   const progressPercentage = (data.reading.day / data.plan.totalDays) * 100;
+  const currentCycle = data.progress.otCycle || data.progress.currentCycle || 1;
 
   return (
     <AppLayout>
@@ -223,26 +288,54 @@ export function ReadingContent({ data }: ReadingContentProps) {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="secondary">Day {data.reading.day}</Badge>
-              <Badge variant="outline">{currentPhase}</Badge>
-              <Badge variant="outline">Cycle {data.progress.currentCycle}</Badge>
+              <Badge variant="outline">Phase {currentPhase}</Badge>
+              <Badge variant="outline">OT Cycle {currentCycle}</Badge>
+              {data.reading.ntRepetitionType && (
+                <Badge variant="outline" className="text-xs">
+                  {data.reading.ntRepetitionType === 'entire_book' ? 'Whole Book' : 'Chapters'}
+                </Badge>
+              )}
             </div>
-            <h1 className="text-2xl font-bold font-serif">
-              {data.reading.passages.join(', ')}
-            </h1>
+            <div className="space-y-1">
+              {ntPassages.length > 0 && (
+                <h1 className="text-xl font-bold font-serif text-blue-700">
+                  NT: {ntPassages.join(', ')}
+                </h1>
+              )}
+              {otPassages.length > 0 && (
+                <h2 className="text-lg font-semibold font-serif text-amber-700">
+                  OT: {otPassages.join(', ')}
+                </h2>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {data.reading.estimatedMinutes && (
+          <div className="flex flex-col items-end gap-2">
+            {data.reading.totalEstimatedMinutes && (
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
-                {formatReadingTime(data.reading.estimatedMinutes)}
+                {formatReadingTime(data.reading.totalEstimatedMinutes)}
               </div>
             )}
-            {data.progress.isCompleted && (
-              <Badge variant="default" className="bg-green-600">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Completed
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {data.progress.ntCompleted && (
+                <Badge variant="default" className="bg-blue-600">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  NT ✓
+                </Badge>
+              )}
+              {data.progress.otCompleted && (
+                <Badge variant="default" className="bg-amber-600">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  OT ✓
+                </Badge>
+              )}
+              {data.progress.isCompleted && (
+                <Badge variant="default" className="bg-green-600">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Complete
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 
@@ -267,11 +360,46 @@ export function ReadingContent({ data }: ReadingContentProps) {
                   >
                     {isReading ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                   </Button>
-                  <div className="text-sm">
-                    Reading time: {Math.floor(readingTimer / 60)}:{(readingTimer % 60).toString().padStart(2, '0')}
+                  <div className="text-sm space-y-1">
+                    <div>
+                      Total: {Math.floor(readingTimer / 60)}:{(readingTimer % 60).toString().padStart(2, '0')}
+                    </div>
+                    <div className="flex gap-4 text-xs text-muted-foreground">
+                      {ntPassages.length > 0 && (
+                        <span>NT: {Math.floor(ntTimer / 60)}:{(ntTimer % 60).toString().padStart(2, '0')}</span>
+                      )}
+                      {otPassages.length > 0 && (
+                        <span>OT: {Math.floor(otTimer / 60)}:{(otTimer % 60).toString().padStart(2, '0')}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant={activeSection === 'nt' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setActiveSection('nt')}
+                      disabled={ntPassages.length === 0}
+                    >
+                      NT
+                    </Button>
+                    <Button
+                      variant={activeSection === 'ot' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setActiveSection('ot')}
+                      disabled={otPassages.length === 0}
+                    >
+                      OT
+                    </Button>
+                    <Button
+                      variant={activeSection === 'both' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setActiveSection('both')}
+                    >
+                      Both
+                    </Button>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
@@ -293,25 +421,120 @@ export function ReadingContent({ data }: ReadingContentProps) {
         )}
 
         {/* Bible Text */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Today's Reading
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin" />
-              </div>
-            ) : (
-              <div className="reading-text whitespace-pre-wrap">
-                {bibleText}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          {/* New Testament Reading */}
+          {ntPassages.length > 0 && (activeSection === 'nt' || activeSection === 'both') && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-blue-600" />
+                  New Testament Reading
+                  {data.reading.ntEstimatedMinutes && (
+                    <Badge variant="outline" className="ml-auto">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {formatReadingTime(data.reading.ntEstimatedMinutes)}
+                    </Badge>
+                  )}
+                  {data.progress.ntCompleted && (
+                    <Badge variant="default" className="bg-blue-600">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Completed
+                    </Badge>
+                  )}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {ntPassages.join(', ')}
+                  {data.reading.ntRepetitionType === 'entire_book' && (
+                    <span className="ml-2 text-xs">• Read entire book for {data.reading.ntRepetitionCount} days</span>
+                  )}
+                </p>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                ) : (
+                  <div className="reading-text whitespace-pre-wrap">
+                    {ntBibleText}
+                  </div>
+                )}
+                {!data.progress.ntCompleted && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Button
+                      onClick={() => handleMarkComplete('nt')}
+                      disabled={markingComplete}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {markingComplete ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                      )}
+                      Complete NT Reading
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Old Testament Reading */}
+          {otPassages.length > 0 && (activeSection === 'ot' || activeSection === 'both') && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-amber-600" />
+                  Old Testament Reading
+                  {data.reading.otEstimatedMinutes && (
+                    <Badge variant="outline" className="ml-auto">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {formatReadingTime(data.reading.otEstimatedMinutes)}
+                    </Badge>
+                  )}
+                  {data.progress.otCompleted && (
+                    <Badge variant="default" className="bg-amber-600">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Completed
+                    </Badge>
+                  )}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {otPassages.join(', ')} • Cycle {currentCycle}
+                </p>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                ) : (
+                  <div className="reading-text whitespace-pre-wrap">
+                    {otBibleText}
+                  </div>
+                )}
+                {!data.progress.otCompleted && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Button
+                      onClick={() => handleMarkComplete('ot')}
+                      disabled={markingComplete}
+                      size="sm"
+                      className="bg-amber-600 hover:bg-amber-700"
+                    >
+                      {markingComplete ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                      )}
+                      Complete OT Reading
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         {/* Notes Section */}
         {showNotes && (
@@ -351,18 +574,58 @@ export function ReadingContent({ data }: ReadingContentProps) {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
           {!data.progress.isCompleted && (
-            <Button
-              onClick={handleMarkComplete}
-              disabled={markingComplete}
-              className="flex-1"
-            >
-              {markingComplete ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <div className="flex-1 space-y-2">
+              {/* Complete Both Button */}
+              {!data.progress.ntCompleted || !data.progress.otCompleted ? (
+                <Button
+                  onClick={() => handleMarkComplete()}
+                  disabled={markingComplete}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  {markingComplete ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                  )}
+                  Complete All Readings
+                </Button>
               ) : (
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <div className="text-center py-2">
+                  <Badge variant="default" className="bg-green-600">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Day {data.reading.day} Complete!
+                  </Badge>
+                </div>
               )}
-              Mark as Complete
-            </Button>
+              
+              {/* Individual Section Progress */}
+              <div className="flex gap-2 text-sm">
+                {ntPassages.length > 0 && (
+                  <div className={`flex-1 p-2 rounded border text-center ${
+                    data.progress.ntCompleted 
+                      ? 'bg-blue-50 border-blue-200 text-blue-700' 
+                      : 'bg-muted border-muted-foreground/20'
+                  }`}>
+                    <div className="font-medium">New Testament</div>
+                    <div className="text-xs">
+                      {data.progress.ntCompleted ? '✓ Complete' : 'In Progress'}
+                    </div>
+                  </div>
+                )}
+                {otPassages.length > 0 && (
+                  <div className={`flex-1 p-2 rounded border text-center ${
+                    data.progress.otCompleted 
+                      ? 'bg-amber-50 border-amber-200 text-amber-700' 
+                      : 'bg-muted border-muted-foreground/20'
+                  }`}>
+                    <div className="font-medium">Old Testament</div>
+                    <div className="text-xs">
+                      {data.progress.otCompleted ? '✓ Complete' : 'In Progress'}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
           
           <div className="flex gap-2">

@@ -73,8 +73,8 @@ export async function GET(request: NextRequest) {
         day: p.dailyReading.day,
         isCompleted: p.isCompleted,
         completedAt: p.completedAt,
-        readingTimeSeconds: p.readingTimeSeconds,
-        currentCycle: p.currentCycle
+        readingTimeSeconds: p.totalReadingTimeSeconds,
+        currentCycle: p.otCycle
       }))
     });
 

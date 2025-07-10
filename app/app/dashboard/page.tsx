@@ -80,8 +80,8 @@ export default async function DashboardPage() {
       currentReading: currentReading ? {
         id: currentReading.id,
         day: currentReading.day,
-        passages: currentReading.passages,
-        estimatedMinutes: currentReading.estimatedMinutes
+        passages: [...(currentReading.ntPassages || []), ...(currentReading.otPassages || [])],
+        estimatedMinutes: currentReading.totalEstimatedMinutes
       } : null
     },
     streak: {
@@ -100,9 +100,9 @@ export default async function DashboardPage() {
     recentReadings: recentReadings.map(r => ({
       id: r.id,
       day: r.dailyReading.day,
-      passages: r.dailyReading.passages,
+      passages: [...(r.dailyReading.ntPassages || []), ...(r.dailyReading.otPassages || [])],
       completedAt: r.completedAt,
-      readingTimeSeconds: r.readingTimeSeconds
+      readingTimeSeconds: r.totalReadingTimeSeconds
     }))
   };
 

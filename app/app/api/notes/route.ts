@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
         updatedAt: note.updatedAt,
         reading: {
           day: note.dailyReading.day,
-          passages: note.dailyReading.passages
+          passages: [...(note.dailyReading.ntPassages || []), ...(note.dailyReading.otPassages || [])]
         }
       }))
     });

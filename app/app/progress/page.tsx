@@ -50,8 +50,8 @@ export default async function ProgressPage() {
 
   // Calculate reading time stats
   const readingTimes = userProgress
-    .filter(p => p.readingTimeSeconds)
-    .map(p => p.readingTimeSeconds!);
+    .filter(p => p.totalReadingTimeSeconds)
+    .map(p => p.totalReadingTimeSeconds!);
   
   const averageReadingTime = readingTimes.length > 0 
     ? readingTimes.reduce((sum, time) => sum + time, 0) / readingTimes.length
@@ -84,9 +84,9 @@ export default async function ProgressPage() {
     recentReadings: userProgress.slice(0, 10).map(p => ({
       id: p.id,
       day: p.dailyReading.day,
-      passages: p.dailyReading.passages,
+      passages: [...(p.dailyReading.ntPassages || []), ...(p.dailyReading.otPassages || [])],
       completedAt: p.completedAt!,
-      readingTimeSeconds: p.readingTimeSeconds
+      readingTimeSeconds: p.totalReadingTimeSeconds
     })),
     monthlyProgress,
     plan: {

@@ -52,12 +52,12 @@ export default async function PlanPage() {
     readings: plan.dailyReadings.map(reading => ({
       id: reading.id,
       day: reading.day,
-      passages: reading.passages,
-      estimatedMinutes: reading.estimatedMinutes,
+      passages: [...(reading.ntPassages || []), ...(reading.otPassages || [])],
+      estimatedMinutes: reading.totalEstimatedMinutes,
       progress: progressMap.get(reading.id) ? {
         isCompleted: progressMap.get(reading.id)!.isCompleted,
         completedAt: progressMap.get(reading.id)!.completedAt,
-        currentCycle: progressMap.get(reading.id)!.currentCycle
+        currentCycle: progressMap.get(reading.id)!.otCycle
       } : null
     })),
     overview: {
