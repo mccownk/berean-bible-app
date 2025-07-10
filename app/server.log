@@ -1,49 +1,16 @@
   ▲ Next.js 14.2.28
   - Local:        http://localhost:3000
-  - Environments: .env
+  - Environments: .env.local, .env
   - Experiments (use with caution):
     · outputFileTracingRoot
 
  ✓ Starting...
- ✓ Ready in 2s
- ○ Compiling /middleware ...
- ✓ Compiled /middleware in 561ms (174 modules)
+ ✓ Ready in 1724ms
+ ✓ Compiled /middleware in 247ms (174 modules)
  ○ Compiling / ...
- ✓ Compiled / in 3.8s (989 modules)
- GET / 200 in 4285ms
- ✓ Compiled in 539ms (373 modules)
- GET / 200 in 42ms
- ✓ Compiled /api/auth/[...nextauth] in 255ms (606 modules)
- GET /api/auth/session 200 in 692ms
- GET /api/auth/session 200 in 24ms
- ✓ Compiled in 384ms (373 modules)
- GET /?_rsc=r3yhw 200 in 33ms
- ✓ Compiled in 513ms (373 modules)
- GET /?_rsc=r3yhw 200 in 33ms
- ✓ Compiled in 253ms (373 modules)
- GET /?_rsc=r3yhw 200 in 20ms
- ✓ Compiled in 328ms (373 modules)
- GET /?_rsc=r3yhw 200 in 25ms
- ✓ Compiled in 263ms (373 modules)
- GET /?_rsc=r3yhw 200 in 25ms
- ✓ Compiled in 247ms (373 modules)
- GET /?_rsc=r3yhw 200 in 22ms
- ✓ Compiled in 236ms (373 modules)
- GET /?_rsc=r3yhw 200 in 21ms
- ✓ Compiled in 305ms (373 modules)
- GET /?_rsc=r3yhw 200 in 22ms
- ✓ Compiled in 248ms (373 modules)
- GET /?_rsc=r3yhw 200 in 20ms
- ✓ Compiled in 238ms (373 modules)
- GET /?_rsc=r3yhw 200 in 28ms
- ✓ Compiled in 256ms (373 modules)
- GET /?_rsc=r3yhw 200 in 24ms
- ✓ Compiled in 233ms (373 modules)
- GET /?_rsc=r3yhw 200 in 21ms
- ✓ Compiled in 280ms (373 modules)
- GET /?_rsc=r3yhw 200 in 21ms
- ✓ Compiled in 287ms (373 modules)
- GET /?_rsc=r3yhw 200 in 21ms
- ✓ Compiled in 235ms (373 modules)
- GET /?_rsc=r3yhw 200 in 21ms
+ ✓ Compiled / in 2.3s (975 modules)
+ GET / 200 in 2758ms
+ ✓ Compiled /api/auth/[...nextauth] in 899ms (979 modules)
+ GET /api/auth/session 200 in 832ms
+ ✓ Compiled in 381ms (373 modules)
 [?25h

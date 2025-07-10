@@ -38,21 +38,50 @@ export function TranslationSelectorWrapper({
         setLoading(true);
         setError(null);
 
+        console.log('🔍 TranslationSelectorWrapper: Starting to fetch translations...');
+
         // Fetch all available translations
         const [translationsResponse, groupsResponse] = await Promise.all([
           fetch('/api/bible/translations'),
           fetch('/api/bible/translation-groups')
         ]);
 
+        console.log('📡 API Responses:', {
+          translations: {
+            status: translationsResponse.status,
+            ok: translationsResponse.ok
+          },
+          groups: {
+            status: groupsResponse.status,
+            ok: groupsResponse.ok
+          }
+        });
+
         if (!translationsResponse.ok || !groupsResponse.ok) {
-          throw new Error('Failed to fetch translations');
+          const errorMsg = `Failed to fetch translations: translations=${translationsResponse.status}, groups=${groupsResponse.status}`;
+          console.error('❌', errorMsg);
+          throw new Error(errorMsg);
         }
 
         const translationsData = await translationsResponse.json();
         const groupsData = await groupsResponse.json();
 
-        setTranslations(translationsData.translations || []);
-        setTranslationGroups(groupsData.groups || []);
+        console.log('📊 Translation Data Received:', {
+          translationsCount: translationsData.translations?.length || 0,
+          groupsCount: groupsData.groups?.length || 0,
+          translationsData: translationsData,
+          groupsData: groupsData
+        });
+
+        const translations = translationsData.translations || [];
+        const groups = groupsData.groups || [];
+
+        if (translations.length === 0) {
+          console.warn('⚠️ No translations received from API');
+        }
+
+        setTranslations(translations);
+        setTranslationGroups(groups);
 
         // Fetch user preferences if userId is provided
         if (userId) {
