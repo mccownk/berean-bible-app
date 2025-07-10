@@ -2,7 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { fetchBiblePassageText, getMockBiblePassage, DEFAULT_BIBLE_ID } from '@/lib/bible-api';
+import { getBiblePassageText, getBiblePassage } from '@/lib/bible-api';
+import { getMockBiblePassage } from '@/lib/esv-api';
 import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     const passageArray = passages.split(',').map(p => p.trim());
     
     // Get user's preferred translation
-    let bibleId = DEFAULT_BIBLE_ID; // Default to BSB
+    let bibleId = 'ESV'; // Default to ESV
     
     try {
       const user = await prisma.user.findUnique({
@@ -41,19 +42,25 @@ export async function GET(request: NextRequest) {
       // Continue with default translation
     }
     
-    // Try to fetch from Bible API first with user's preferred translation
-    let content = await fetchBiblePassageText(passageArray, bibleId);
+    // Use unified Bible service that routes to appropriate API
+    const response = await getBiblePassage(passageArray, 'text', bibleId);
     
-    // If Bible API fails, use mock content for development
-    if (!content) {
-      content = getMockBiblePassage(passageArray);
+    if (!response) {
+      // If both APIs fail, use mock content for development
+      const content = getMockBiblePassage(passageArray);
+      return NextResponse.json({
+        passages: passageArray,
+        content,
+        reference: passageArray.join(', '),
+        translation: bibleId
+      });
     }
 
     return NextResponse.json({
       passages: passageArray,
-      content,
-      reference: passageArray.join(', '),
-      translation: bibleId
+      content: response.passages[0],
+      reference: response.reference,
+      translation: response.translation
     });
 
   } catch (error) {

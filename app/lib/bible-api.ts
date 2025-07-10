@@ -185,6 +185,8 @@ export async function fetchBiblePassage(
     
     // Get translation abbreviation based on bibleId
     const translationMap: { [key: string]: string } = {
+      'ESV': 'ESV',
+      'esv': 'ESV',
       'bba9f40183526463-01': 'BSB',
       'de4e12af7f28f599-01': 'KJV',
       'de4e12af7f28f599-02': 'KJV',
@@ -268,15 +270,22 @@ export async function getAvailableTranslations(): Promise<BibleTranslation[]> {
   }
 }
 
-// Get popular translations for UI selection
+// Get popular translations for UI selection (ESV first, then others)
 export function getPopularTranslations(): BibleTranslation[] {
   return [
+    {
+      id: 'ESV',
+      name: 'English Standard Version',
+      abbreviation: 'ESV',
+      language: { id: 'eng', name: 'English', nameLocal: 'English' },
+      description: 'Modern literal translation - Default for this app'
+    },
     {
       id: 'bba9f40183526463-01',
       name: 'Berean Standard Bible',
       abbreviation: 'BSB',
       language: { id: 'eng', name: 'English', nameLocal: 'English' },
-      description: 'Berean Standard Bible - Perfect match for this app'
+      description: 'Berean Standard Bible'
     },
     {
       id: 'de4e12af7f28f599-01',
@@ -367,6 +376,81 @@ export function formatBibleReference(passages: string[]): string {
   });
   
   return formattedGroups.join('; ');
+}
+
+// ESV API Integration
+import * as ESVApi from './esv-api';
+
+export interface UnifiedBibleResponse {
+  query: string;
+  canonical: string;
+  reference: string;
+  passages: string[];
+  bibleId: string;
+  translation: string;
+}
+
+// Unified Bible service that routes to appropriate API
+export async function getBiblePassage(
+  passages: string[],
+  format: 'text' | 'html' = 'text',
+  bibleId: string = 'ESV'
+): Promise<UnifiedBibleResponse | null> {
+  try {
+    // Route ESV requests to ESV API
+    if (bibleId === 'ESV' || bibleId === 'esv') {
+      const esvResponse = await ESVApi.fetchBiblePassage(passages, format);
+      
+      if (esvResponse) {
+        return {
+          query: esvResponse.query,
+          canonical: esvResponse.canonical,
+          reference: esvResponse.canonical,
+          passages: esvResponse.passages,
+          bibleId: 'ESV',
+          translation: 'ESV'
+        };
+      }
+      
+      // Fallback to Bible API if ESV fails
+      console.warn('ESV API failed, falling back to Bible API');
+      return await fetchBiblePassage(passages, format, DEFAULT_BIBLE_ID);
+    }
+    
+    // Route all other translations to Bible API
+    return await fetchBiblePassage(passages, format, bibleId);
+    
+  } catch (error) {
+    console.error('Error in unified Bible service:', error);
+    
+    // Fallback to mock content
+    const mockContent = ESVApi.getMockBiblePassage(passages);
+    return {
+      query: passages.join(';'),
+      canonical: passages.join('; '),
+      reference: passages.join('; '),
+      passages: [mockContent],
+      bibleId: bibleId,
+      translation: bibleId === 'ESV' ? 'ESV' : 'Unknown'
+    };
+  }
+}
+
+// Convenience functions for the unified service
+export async function getBiblePassageText(
+  passages: string[], 
+  bibleId: string = 'ESV'
+): Promise<string | null> {
+  const data = await getBiblePassage(passages, 'text', bibleId);
+  return data?.passages?.[0] || null;
+}
+
+export async function getBiblePassageHtml(
+  passages: string[], 
+  bibleId: string = 'ESV'
+): Promise<string | null> {
+  const data = await getBiblePassage(passages, 'html', bibleId);
+  return data?.passages?.[0] || null;
 }
 
 export { DEFAULT_BIBLE_ID };

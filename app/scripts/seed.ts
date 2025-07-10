@@ -309,7 +309,7 @@ async function main() {
         notificationsEnabled: true,
         theme: 'light',
         fontSize: 'medium',
-        preferredTranslation: 'bba9f40183526463-01', // BSB - Berean Standard Bible
+        preferredTranslation: 'ESV', // ESV - English Standard Version
       },
     });
     
