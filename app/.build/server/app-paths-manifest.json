@@ -1,0 +1,23 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/onboarding/page": "app/onboarding/page.js",
+  "/page": "app/page.js",
+  "/api/bible/translation-groups/route": "app/api/bible/translation-groups/route.js",
+  "/api/auth/signup/route": "app/api/auth/signup/route.js",
+  "/api/bible/passage/route": "app/api/bible/passage/route.js",
+  "/api/bible/translations/route": "app/api/bible/translations/route.js",
+  "/api/profile/route": "app/api/profile/route.js",
+  "/api/notes/route": "app/api/notes/route.js",
+  "/api/reading-plan/route": "app/api/reading-plan/route.js",
+  "/api/user/update-translation-history/route": "app/api/user/update-translation-history/route.js",
+  "/api/user/translation-preferences/route": "app/api/user/translation-preferences/route.js",
+  "/api/profile/export/route": "app/api/profile/export/route.js",
+  "/api/progress/complete/route": "app/api/progress/complete/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/plan/page": "app/plan/page.js",
+  "/progress/page": "app/progress/page.js",
+  "/theme-test/page": "app/theme-test/page.js",
+  "/read/[day]/page": "app/read/[day]/page.js"
+}

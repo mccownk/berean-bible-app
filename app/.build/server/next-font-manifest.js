@@ -1,0 +1,1 @@
+self.__NEXT_FONT_MANIFEST='{"pages":{},"app":{"/home/ubuntu/berean-bible-app/app/app/layout":["static/media/e4af272ccee01ff0-s.p.woff2","static/media/383c2ab2a767fb58-s.p.woff2"]},"appUsingSizeAdjust":true,"pagesUsingSizeAdjust":false}';
