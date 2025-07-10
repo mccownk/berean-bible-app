@@ -27,7 +27,8 @@ export default async function ProfilePage() {
       preferredStartTime: true,
       notificationsEnabled: true,
       theme: true,
-      fontSize: true
+      fontSize: true,
+      preferredTranslation: true
     }
   });
 
@@ -48,7 +49,8 @@ export default async function ProfilePage() {
         preferredStartTime: user.preferredStartTime,
         notificationsEnabled: user.notificationsEnabled,
         theme: user.theme,
-        fontSize: user.fontSize
+        fontSize: user.fontSize,
+        preferredTranslation: user.preferredTranslation
       }
     }
   };

@@ -21,7 +21,8 @@ export async function PATCH(request: NextRequest) {
       fontSize, 
       preferredReadingTime,
       preferredTimeOfDay,
-      preferredStartTime
+      preferredStartTime,
+      preferredTranslation
     } = await request.json();
 
     const updatedUser = await prisma.user.update({
@@ -33,7 +34,8 @@ export async function PATCH(request: NextRequest) {
         fontSize,
         preferredReadingTime,
         preferredTimeOfDay,
-        preferredStartTime
+        preferredStartTime,
+        preferredTranslation
       }
     });
 
@@ -49,7 +51,8 @@ export async function PATCH(request: NextRequest) {
           fontSize: updatedUser.fontSize,
           preferredReadingTime: updatedUser.preferredReadingTime,
           preferredTimeOfDay: updatedUser.preferredTimeOfDay,
-          preferredStartTime: updatedUser.preferredStartTime
+          preferredStartTime: updatedUser.preferredStartTime,
+          preferredTranslation: updatedUser.preferredTranslation
         }
       }
     });

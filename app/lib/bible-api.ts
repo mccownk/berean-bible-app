@@ -183,13 +183,31 @@ export async function fetchBiblePassage(
       return null;
     }
     
+    // Get translation abbreviation based on bibleId
+    const translationMap: { [key: string]: string } = {
+      'bba9f40183526463-01': 'BSB',
+      'de4e12af7f28f599-01': 'KJV',
+      'de4e12af7f28f599-02': 'KJV',
+      '06125adad2d5898a-01': 'ASV',
+      '685d1470fe4d5c3b-01': 'ASVBT',
+      '55212e3cf5d04d49-01': 'KJVCPB',
+      '01b29f4b342acc35-01': 'LSV',
+      '9879dbb7cfe39e4d-01': 'WEB',
+      '9879dbb7cfe39e4d-02': 'WEB',
+      '9879dbb7cfe39e4d-03': 'WEB',
+      '9879dbb7cfe39e4d-04': 'WEB',
+      '65eec8e0b60e656b-01': 'FBV',
+      '179568874c45066f-01': 'DRA',
+      'c315fa9f71d4af3a-01': 'GNV'
+    };
+    
     return {
       query: passages.join(';'),
       canonical: allReferences.join('; '),
       reference: allReferences.join('; '),
       passages: allPassages,
       bibleId: bibleId,
-      translation: 'BSB' // Berean Standard Bible
+      translation: translationMap[bibleId] || 'Unknown'
     };
   } catch (error) {
     console.error('Error fetching Bible passage:', error);
@@ -248,6 +266,61 @@ export async function getAvailableTranslations(): Promise<BibleTranslation[]> {
     console.error('Error fetching available translations:', error);
     return [];
   }
+}
+
+// Get popular translations for UI selection
+export function getPopularTranslations(): BibleTranslation[] {
+  return [
+    {
+      id: 'bba9f40183526463-01',
+      name: 'Berean Standard Bible',
+      abbreviation: 'BSB',
+      language: { id: 'eng', name: 'English', nameLocal: 'English' },
+      description: 'Berean Standard Bible - Perfect match for this app'
+    },
+    {
+      id: 'de4e12af7f28f599-01',
+      name: 'King James (Authorised) Version',
+      abbreviation: 'KJV',
+      language: { id: 'eng', name: 'English', nameLocal: 'English' },
+      description: 'Classic English translation from 1611'
+    },
+    {
+      id: '06125adad2d5898a-01',
+      name: 'American Standard Version',
+      abbreviation: 'ASV',
+      language: { id: 'eng', name: 'English', nameLocal: 'English' },
+      description: 'American Standard Version from 1901'
+    },
+    {
+      id: '01b29f4b342acc35-01',
+      name: 'Literal Standard Version',
+      abbreviation: 'LSV',
+      language: { id: 'eng', name: 'English', nameLocal: 'English' },
+      description: 'Modern literal translation'
+    },
+    {
+      id: '9879dbb7cfe39e4d-04',
+      name: 'World English Bible',
+      abbreviation: 'WEB',
+      language: { id: 'eng', name: 'English', nameLocal: 'English' },
+      description: 'Public domain modern English translation'
+    },
+    {
+      id: '65eec8e0b60e656b-01',
+      name: 'Free Bible Version',
+      abbreviation: 'FBV',
+      language: { id: 'eng', name: 'English', nameLocal: 'English' },
+      description: 'Free contemporary English translation'
+    },
+    {
+      id: 'c315fa9f71d4af3a-01',
+      name: 'Geneva Bible',
+      abbreviation: 'GNV',
+      language: { id: 'eng', name: 'English', nameLocal: 'English' },
+      description: 'Historic English translation from 1599'
+    }
+  ];
 }
 
 // Mock function for development/testing when Bible API is not available

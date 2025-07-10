@@ -87,6 +87,7 @@ interface ReadingContentProps {
 export function ReadingContent({ data }: ReadingContentProps) {
   const [ntBibleText, setNtBibleText] = useState<string>('');
   const [otBibleText, setOtBibleText] = useState<string>('');
+  const [currentTranslation, setCurrentTranslation] = useState<string>('BSB');
   const [loading, setLoading] = useState(true);
   const [markingComplete, setMarkingComplete] = useState(false);
   const [noteContent, setNoteContent] = useState('');
@@ -116,6 +117,10 @@ export function ReadingContent({ data }: ReadingContentProps) {
           const ntResult = await ntResponse.json();
           if (ntResponse.ok) {
             setNtBibleText(ntResult.content);
+            // Set translation from the first successful response
+            if (ntResult.translation) {
+              setCurrentTranslation(ntResult.translation);
+            }
           }
         }
         
@@ -125,6 +130,10 @@ export function ReadingContent({ data }: ReadingContentProps) {
           const otResult = await otResponse.json();
           if (otResponse.ok) {
             setOtBibleText(otResult.content);
+            // Set translation if not already set from NT response
+            if (otResult.translation && currentTranslation === 'BSB') {
+              setCurrentTranslation(otResult.translation);
+            }
           }
         }
         
@@ -290,6 +299,10 @@ export function ReadingContent({ data }: ReadingContentProps) {
               <Badge variant="secondary">Day {data.reading.day}</Badge>
               <Badge variant="outline">Phase {currentPhase}</Badge>
               <Badge variant="outline">OT Cycle {currentCycle}</Badge>
+              <Badge variant="outline" className="text-xs bg-green-50 border-green-200 text-green-700">
+                <BookOpen className="h-3 w-3 mr-1" />
+                {currentTranslation}
+              </Badge>
               {data.reading.ntRepetitionType && (
                 <Badge variant="outline" className="text-xs">
                   {data.reading.ntRepetitionType === 'entire_book' ? 'Whole Book' : 'Chapters'}

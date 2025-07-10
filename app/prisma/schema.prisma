@@ -58,6 +58,7 @@ model User {
   notificationsEnabled Boolean     @default(true)
   theme             String?        @default("light")
   fontSize          String?        @default("medium")
+  preferredTranslation String?     @default("bba9f40183526463-01") // Default to BSB
   
   // Relations
   accounts          Account[]

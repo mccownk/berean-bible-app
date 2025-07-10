@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useCustomTheme } from '@/components/theme-provider';
+import { getPopularTranslations } from '@/lib/bible-api';
 import { 
   User, 
   Settings, 
@@ -20,7 +21,8 @@ import {
   Clock,
   LogOut,
   Save,
-  Loader2
+  Loader2,
+  BookOpen
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -40,6 +42,7 @@ interface ProfileData {
       notificationsEnabled: boolean;
       theme: string | null;
       fontSize: string | null;
+      preferredTranslation: string | null;
     };
   };
 }
@@ -68,6 +71,12 @@ export function ProfileContent({ data }: ProfileContentProps) {
   const [preferredStartTime, setPreferredStartTime] = useState(
     data.user.preferences.preferredStartTime || '09:00'
   );
+  const [preferredTranslation, setPreferredTranslation] = useState(
+    data.user.preferences.preferredTranslation || 'bba9f40183526463-01'
+  );
+
+  // Get available translations
+  const availableTranslations = getPopularTranslations();
 
   // Apply user's saved theme when component mounts
   useEffect(() => {
@@ -105,7 +114,8 @@ export function ProfileContent({ data }: ProfileContentProps) {
           fontSize,
           preferredReadingTime,
           preferredTimeOfDay,
-          preferredStartTime
+          preferredStartTime,
+          preferredTranslation
         }),
       });
 
@@ -302,6 +312,33 @@ export function ProfileContent({ data }: ProfileContentProps) {
                   <SelectItem value="extra-large">Extra Large</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Bible Translation
+              </Label>
+              <Select value={preferredTranslation} onValueChange={setPreferredTranslation}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a Bible translation" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTranslations.map((translation) => (
+                    <SelectItem key={translation.id} value={translation.id}>
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">{translation.abbreviation}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {translation.name}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Choose your preferred Bible translation for reading
+              </p>
             </div>
           </CardContent>
         </Card>
