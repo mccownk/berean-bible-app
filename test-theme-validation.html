@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Validation Test</title>
+    <style>
+        /* Copy the theme CSS from globals.css */
+        :root {
+            --background: 220 40% 98%;
+            --foreground: 222 47% 11%;
+            --card: 0 0% 100%;
+            --card-foreground: 222 47% 11%;
+            --primary: 217 91% 60%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 222 47% 11%;
+            --muted: 210 40% 96%;
+            --muted-foreground: 215 13% 65%;
+            --accent: 45 93% 47%;
+            --accent-foreground: 210 40% 98%;
+            --border: 214 32% 91%;
+            --input: 214 32% 91%;
+        }
+
+        .dark {
+            --background: 224 71% 4%;
+            --foreground: 213 31% 91%;
+            --card: 224 71% 4%;
+            --card-foreground: 213 31% 91%;
+            --primary: 217 91% 60%;
+            --primary-foreground: 222 47% 11%;
+            --secondary: 215 28% 17%;
+            --secondary-foreground: 213 31% 91%;
+            --muted: 215 28% 17%;
+            --muted-foreground: 217 10% 65%;
+            --accent: 45 93% 47%;
+            --accent-foreground: 213 31% 91%;
+            --border: 215 28% 17%;
+            --input: 215 28% 17%;
+        }
+
+        .theme-sepia {
+            --background: 40 50% 96%;
+            --foreground: 30 20% 20%;
+            --card: 42 48% 92%;
+            --card-foreground: 30 20% 20%;
+            --primary: 217 91% 60%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 42 48% 88%;
+            --secondary-foreground: 30 20% 20%;
+            --muted: 42 48% 88%;
+            --muted-foreground: 30 15% 40%;
+            --accent: 45 93% 47%;
+            --accent-foreground: 30 20% 20%;
+            --border: 42 48% 85%;
+            --input: 42 48% 85%;
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .card {
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            border: 1px solid hsl(var(--border));
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .button {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .input {
+            background-color: hsl(var(--input));
+            color: hsl(var(--foreground));
+            border: 1px solid hsl(var(--border));
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 5px;
+        }
+
+        .info {
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            background: hsl(var(--muted));
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Berean Bible App - Theme Validation Test</h1>
+    
+    <div class="card">
+        <h2>Theme Switching Test</h2>
+        <p>This page tests the three themes: Light, Dark, and Sepia</p>
+        
+        <button class="button" onclick="setTheme('light')">Light Theme</button>
+        <button class="button" onclick="setTheme('dark')">Dark Theme</button>
+        <button class="button" onclick="setTheme('sepia')">Sepia Theme</button>
+        
+        <div class="info" id="themeInfo">
+            Current theme: <span id="currentTheme">light</span><br>
+            HTML classes: <span id="htmlClasses"></span><br>
+            Background color: <span id="backgroundColor"></span>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3>Sample UI Components</h3>
+        <input class="input" type="text" placeholder="Sample input field" value="Test input">
+        <button class="button">Sample Button</button>
+        <p>This text should adapt to the current theme.</p>
+    </div>
+
+    <div class="card">
+        <h3>CSS Variables Test</h3>
+        <div id="cssVars"></div>
+    </div>
+
+    <script>
+        function setTheme(theme) {
+            // Clear existing theme classes
+            document.documentElement.classList.remove('dark', 'theme-sepia');
+            
+            // Apply new theme
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else if (theme === 'sepia') {
+                document.documentElement.classList.add('theme-sepia');
+            }
+            // light theme is default (no class needed)
+            
+            updateThemeInfo(theme);
+        }
+        
+        function updateThemeInfo(theme) {
+            document.getElementById('currentTheme').textContent = theme;
+            document.getElementById('htmlClasses').textContent = document.documentElement.className;
+            
+            const style = getComputedStyle(document.documentElement);
+            const bgColor = style.getPropertyValue('--background').trim();
+            document.getElementById('backgroundColor').textContent = bgColor;
+            
+            // Show CSS variables
+            const vars = ['--background', '--foreground', '--card', '--primary', '--border'];
+            let cssVarsHtml = '';
+            vars.forEach(varName => {
+                const value = style.getPropertyValue(varName).trim();
+                cssVarsHtml += `<div><strong>${varName}:</strong> ${value}</div>`;
+            });
+            document.getElementById('cssVars').innerHTML = cssVarsHtml;
+        }
+        
+        // Initialize theme info
+        updateThemeInfo('light');
+    </script>
+</body>
+</html>

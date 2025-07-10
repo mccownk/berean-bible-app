@@ -57,7 +57,7 @@ export function ProfileContent({ data }: ProfileContentProps) {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState(data.user.name || '');
   const [notificationsEnabled, setNotificationsEnabled] = useState(data.user.preferences.notificationsEnabled);
-  const [localTheme, setLocalTheme] = useState(data.user.preferences.theme || 'light');
+  const [currentTheme, setCurrentTheme] = useState(data.user.preferences.theme || 'light');
   const [fontSize, setFontSize] = useState(data.user.preferences.fontSize || 'medium');
   const [preferredReadingTime, setPreferredReadingTime] = useState(
     data.user.preferences.preferredReadingTime || 15
@@ -69,24 +69,25 @@ export function ProfileContent({ data }: ProfileContentProps) {
     data.user.preferences.preferredStartTime || '09:00'
   );
 
-  // Apply user's saved theme when component mounts and sync local state
+  // Apply user's saved theme when component mounts
+  useEffect(() => {
+    if (mounted && data.user.preferences.theme) {
+      const savedTheme = data.user.preferences.theme;
+      setAppTheme(savedTheme);
+      setCurrentTheme(savedTheme);
+    }
+  }, [mounted, setAppTheme]);
+
+  // Sync current theme state with actual theme
   useEffect(() => {
     if (mounted) {
-      const savedTheme = data.user.preferences.theme || 'light';
-      
-      // Apply saved theme if it's different from current theme
-      if (savedTheme !== theme) {
-        setAppTheme(savedTheme);
-      }
-      
-      // Always sync local state with actual theme
-      setLocalTheme(theme);
+      setCurrentTheme(theme);
     }
-  }, [mounted, data.user.preferences.theme, theme, setAppTheme]);
+  }, [theme, mounted]);
 
   // Handle theme change immediately
   const handleThemeChange = (newTheme: string) => {
-    setLocalTheme(newTheme);
+    setCurrentTheme(newTheme);
     setAppTheme(newTheme);
   };
 
@@ -100,7 +101,7 @@ export function ProfileContent({ data }: ProfileContentProps) {
         body: JSON.stringify({
           name,
           notificationsEnabled,
-          theme: localTheme,
+          theme: currentTheme,
           fontSize,
           preferredReadingTime,
           preferredTimeOfDay,
@@ -276,7 +277,7 @@ export function ProfileContent({ data }: ProfileContentProps) {
 
             <div className="space-y-2">
               <Label>Theme</Label>
-              <Select value={localTheme} onValueChange={handleThemeChange}>
+              <Select value={currentTheme} onValueChange={handleThemeChange}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

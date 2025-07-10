@@ -11,7 +11,7 @@ export default withAuth(
         // Protect all routes except auth and public routes
         const { pathname } = req.nextUrl;
         
-        if (pathname.startsWith('/auth') || pathname === '/') {
+        if (pathname.startsWith('/auth') || pathname === '/' || pathname === '/theme-test') {
           return true;
         }
         

@@ -8,46 +8,47 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }
 
-// Custom hook for theme management with sepia support
+// Simplified custom hook for theme management with sepia support
 export function useCustomTheme() {
   const { theme, setTheme, systemTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
-  const [currentTheme, setCurrentTheme] = React.useState<string>('light');
   
   React.useEffect(() => {
     setMounted(true);
   }, []);
-  
-  // Sync current theme with next-themes and DOM state
-  React.useEffect(() => {
-    if (!mounted) return;
-    
-    if (document?.documentElement?.classList?.contains('theme-sepia')) {
-      setCurrentTheme('sepia');
-    } else {
-      setCurrentTheme(theme || systemTheme || 'light');
-    }
-  }, [theme, systemTheme, mounted]);
 
+  // Apply theme with proper sepia handling
   const applyTheme = React.useCallback((newTheme: string) => {
     if (!mounted) return;
     
-    // Update local state immediately
-    setCurrentTheme(newTheme);
+    // Clean up any existing theme classes
+    document.documentElement.classList.remove('theme-sepia');
     
-    // Handle sepia theme as a special case
     if (newTheme === 'sepia') {
-      document.documentElement.classList.remove('dark');
+      // For sepia, add custom class and set next-themes to light
       document.documentElement.classList.add('theme-sepia');
-      setTheme('light'); // Use light as base for sepia
+      setTheme('light');
     } else {
-      document.documentElement.classList.remove('theme-sepia');
+      // For light/dark, use next-themes normally
       setTheme(newTheme);
     }
   }, [setTheme, mounted]);
 
+  // Get current effective theme
+  const getCurrentTheme = React.useCallback(() => {
+    if (!mounted) return 'light';
+    
+    if (document.documentElement.classList.contains('theme-sepia')) {
+      return 'sepia';
+    }
+    if (document.documentElement.classList.contains('dark')) {
+      return 'dark';
+    }
+    return 'light';
+  }, [mounted]);
+
   return {
-    theme: currentTheme,
+    theme: getCurrentTheme(),
     setTheme: applyTheme,
     systemTheme,
     mounted
