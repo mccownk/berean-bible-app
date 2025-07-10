@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useCustomTheme } from '@/components/theme-provider';
 import { getPopularTranslations } from '@/lib/bible-api';
+import type { BibleTranslation } from '@/lib/bible-api';
 import { 
   User, 
   Settings, 
@@ -75,8 +76,44 @@ export function ProfileContent({ data }: ProfileContentProps) {
     data.user.preferences.preferredTranslation || 'bba9f40183526463-01'
   );
 
-  // Get available translations
-  const availableTranslations = getPopularTranslations();
+  // Available translations state
+  const [availableTranslations, setAvailableTranslations] = useState<BibleTranslation[]>([]);
+  const [loadingTranslations, setLoadingTranslations] = useState(true);
+
+  // Load available translations
+  useEffect(() => {
+    const loadTranslations = async () => {
+      try {
+        const translations = await getPopularTranslations();
+        setAvailableTranslations(translations);
+      } catch (error) {
+        console.error('Error loading translations:', error);
+        // Fallback to basic translations
+        setAvailableTranslations([
+          { 
+            id: 'ESV', 
+            abbreviation: 'ESV', 
+            name: 'English Standard Version',
+            language: { id: 'eng', name: 'English', nameLocal: 'English', script: 'Latin', scriptDirection: 'LTR' },
+            category: 'popular' as const,
+            source: 'esv' as const
+          },
+          { 
+            id: 'bba9f40183526463-01', 
+            abbreviation: 'BSB', 
+            name: 'Berean Standard Bible',
+            language: { id: 'eng', name: 'English', nameLocal: 'English', script: 'Latin', scriptDirection: 'LTR' },
+            category: 'popular' as const,
+            source: 'api_bible' as const
+          },
+        ]);
+      } finally {
+        setLoadingTranslations(false);
+      }
+    };
+
+    loadTranslations();
+  }, []);
 
   // Apply user's saved theme when component mounts
   useEffect(() => {

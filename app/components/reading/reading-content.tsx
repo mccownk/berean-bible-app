@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { TranslationSelectorWrapper } from '@/components/ui/translation-selector-wrapper';
 import { useToast } from '@/hooks/use-toast';
 import { 
   BookOpen, 
@@ -18,11 +19,13 @@ import {
   StickyNote,
   Loader2,
   Play,
-  Pause
+  Pause,
+  Languages
 } from 'lucide-react';
 import { formatReadingTime, getCurrentPhase } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/layout/app-layout';
+import { useSession } from 'next-auth/react';
 
 interface ReadingData {
   plan: {
@@ -87,11 +90,12 @@ interface ReadingContentProps {
 export function ReadingContent({ data }: ReadingContentProps) {
   const [ntBibleText, setNtBibleText] = useState<string>('');
   const [otBibleText, setOtBibleText] = useState<string>('');
-  const [currentTranslation, setCurrentTranslation] = useState<string>('BSB');
+  const [currentTranslation, setCurrentTranslation] = useState<string>('ESV');
   const [loading, setLoading] = useState(true);
   const [markingComplete, setMarkingComplete] = useState(false);
   const [noteContent, setNoteContent] = useState('');
   const [showNotes, setShowNotes] = useState(false);
+  const [showTranslationSelector, setShowTranslationSelector] = useState(false);
   const [readingTimer, setReadingTimer] = useState(0);
   const [ntTimer, setNtTimer] = useState(0);
   const [otTimer, setOtTimer] = useState(0);
@@ -99,57 +103,72 @@ export function ReadingContent({ data }: ReadingContentProps) {
   const [activeSection, setActiveSection] = useState<'nt' | 'ot' | 'both'>('both');
   const { toast } = useToast();
   const router = useRouter();
+  const { data: session } = useSession();
 
   // Backward compatibility: extract passages from new or legacy format
   const ntPassages = data.reading.ntPassages || data.reading.passages || [];
   const otPassages = data.reading.otPassages || [];
   const allPassages = [...ntPassages, ...otPassages];
 
-  // Load Bible text for both NT and OT
-  useEffect(() => {
-    const fetchBibleText = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch NT text
-        if (ntPassages.length > 0) {
-          const ntResponse = await fetch(`/api/bible/passage?passages=${ntPassages.join(',')}`);
-          const ntResult = await ntResponse.json();
-          if (ntResponse.ok) {
-            setNtBibleText(ntResult.content);
-            // Set translation from the first successful response
-            if (ntResult.translation) {
-              setCurrentTranslation(ntResult.translation);
-            }
-          }
-        }
-        
-        // Fetch OT text
-        if (otPassages.length > 0) {
-          const otResponse = await fetch(`/api/bible/passage?passages=${otPassages.join(',')}`);
-          const otResult = await otResponse.json();
-          if (otResponse.ok) {
-            setOtBibleText(otResult.content);
-            // Set translation if not already set from NT response
-            if (otResult.translation && currentTranslation === 'BSB') {
-              setCurrentTranslation(otResult.translation);
-            }
-          }
-        }
-        
-      } catch (error) {
-        toast({
-          title: "Error loading Bible text",
-          description: "Please check your connection and try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Handle translation changes
+  const handleTranslationChange = async (newTranslation: string) => {
+    setCurrentTranslation(newTranslation);
+    setLoading(true);
+    
+    try {
+      // Fetch Bible text with new translation
+      await fetchBibleText(newTranslation);
+      
+      toast({
+        title: "Translation updated",
+        description: `Switched to ${newTranslation}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error changing translation",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
+  // Load Bible text for both NT and OT
+  const fetchBibleText = async (translation: string = currentTranslation) => {
+    try {
+      setLoading(true);
+      
+      // Fetch NT text
+      if (ntPassages.length > 0) {
+        const ntResponse = await fetch(`/api/bible/passage?passages=${ntPassages.join(',')}&translation=${translation}`);
+        const ntResult = await ntResponse.json();
+        if (ntResponse.ok) {
+          setNtBibleText(ntResult.content);
+        }
+      }
+      
+      // Fetch OT text
+      if (otPassages.length > 0) {
+        const otResponse = await fetch(`/api/bible/passage?passages=${otPassages.join(',')}&translation=${translation}`);
+        const otResult = await otResponse.json();
+        if (otResponse.ok) {
+          setOtBibleText(otResult.content);
+        }
+      }
+      
+    } catch (error) {
+      toast({
+        title: "Error loading Bible text",
+        description: "Please check your connection and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchBibleText();
-  }, [ntPassages, otPassages, toast]);
+  }, [ntPassages, otPassages]);
 
   // Reading timer
   useEffect(() => {
@@ -299,10 +318,15 @@ export function ReadingContent({ data }: ReadingContentProps) {
               <Badge variant="secondary">Day {data.reading.day}</Badge>
               <Badge variant="outline">Phase {currentPhase}</Badge>
               <Badge variant="outline">OT Cycle {currentCycle}</Badge>
-              <Badge variant="outline" className="text-xs bg-green-50 border-green-200 text-green-700">
-                <BookOpen className="h-3 w-3 mr-1" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTranslationSelector(!showTranslationSelector)}
+                className="text-xs bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+              >
+                <Languages className="h-3 w-3 mr-1" />
                 {currentTranslation}
-              </Badge>
+              </Button>
               {data.reading.ntRepetitionType && (
                 <Badge variant="outline" className="text-xs">
                   {data.reading.ntRepetitionType === 'entire_book' ? 'Whole Book' : 'Chapters'}
@@ -359,6 +383,36 @@ export function ReadingContent({ data }: ReadingContentProps) {
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
+
+        {/* Translation Selector */}
+        {showTranslationSelector && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Languages className="h-5 w-5" />
+                Bible Translation
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TranslationSelectorWrapper
+                selectedTranslation={currentTranslation}
+                onTranslationChange={handleTranslationChange}
+                userId={session?.user?.id}
+                showDescription={true}
+                className="w-full"
+              />
+              <div className="mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowTranslationSelector(false)}
+                  className="w-full"
+                >
+                  Close Translation Selector
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Reading Timer */}
         {!data.progress.isCompleted && (

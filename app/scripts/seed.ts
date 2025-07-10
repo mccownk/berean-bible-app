@@ -309,7 +309,12 @@ async function main() {
         notificationsEnabled: true,
         theme: 'light',
         fontSize: 'medium',
-        preferredTranslation: 'ESV', // ESV - English Standard Version
+        // Enhanced translation preferences
+        preferredLanguage: 'eng',
+        preferredTranslation: 'ESV', // ESV - English Standard Version (default)
+        secondaryTranslation: 'bba9f40183526463-01', // BSB - Berean Standard Bible (secondary)
+        translationHistory: ['ESV', 'bba9f40183526463-01', 'de4e12af7f28f599-01'], // Recent: ESV, BSB, KJV
+        favoriteTranslations: ['ESV', 'bba9f40183526463-01', '01b29f4b342acc35-01'], // Favorites: ESV, BSB, LSV
       },
     });
     

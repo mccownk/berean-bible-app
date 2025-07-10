@@ -1,20 +1,17 @@
 
 const API_BIBLE_BASE_URL = 'https://api.scripture.api.bible/v1';
 
-// Using Berean Standard Bible as default (perfect for "Berean Bible" app)
-const DEFAULT_BIBLE_ID = 'bba9f40183526463-01';
+// ESV is now the default (via ESV API)
+const DEFAULT_BIBLE_ID = 'ESV';
 
-export interface BibleTranslation {
-  id: string;
-  name: string;
-  abbreviation: string;
-  language: {
-    id: string;
-    name: string;
-    nameLocal: string;
-  };
-  description?: string;
-}
+// Import from translation discovery service
+import { 
+  BibleTranslation, 
+  getAllAvailableTranslations, 
+  getTranslationById, 
+  isESVTranslation,
+  getFallbackTranslations 
+} from './translation-discovery';
 
 export interface BiblePassageResponse {
   query: string;
@@ -235,101 +232,24 @@ export async function fetchBiblePassageHtml(
 
 export async function getAvailableTranslations(): Promise<BibleTranslation[]> {
   try {
-    const response = await fetch(`${API_BIBLE_BASE_URL}/bibles`, {
-      headers: {
-        'api-key': process.env.BIBLE_API_KEY || '',
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      console.error('Bible API Error:', response.status, response.statusText);
-      return [];
-    }
-
-    const data = await response.json();
-    
-    // Filter for English translations and popular ones
-    const translations: BibleTranslation[] = data.data
-      .filter((bible: any) => 
-        bible.language.id === 'eng' || 
-        bible.language.name.toLowerCase().includes('english')
-      )
-      .map((bible: any) => ({
-        id: bible.id,
-        name: bible.name,
-        abbreviation: bible.abbreviation,
-        language: bible.language,
-        description: bible.description
-      }));
-
-    return translations;
+    // Use the new translation discovery service
+    return await getAllAvailableTranslations();
   } catch (error) {
     console.error('Error fetching available translations:', error);
-    return [];
+    // Return fallback translations if discovery service fails
+    return getFallbackTranslations();
   }
 }
 
 // Get popular translations for UI selection (ESV first, then others)
-export function getPopularTranslations(): BibleTranslation[] {
-  return [
-    {
-      id: 'ESV',
-      name: 'English Standard Version',
-      abbreviation: 'ESV',
-      language: { id: 'eng', name: 'English', nameLocal: 'English' },
-      description: 'Modern literal translation - Default for this app'
-    },
-    {
-      id: 'bba9f40183526463-01',
-      name: 'Berean Standard Bible',
-      abbreviation: 'BSB',
-      language: { id: 'eng', name: 'English', nameLocal: 'English' },
-      description: 'Berean Standard Bible'
-    },
-    {
-      id: 'de4e12af7f28f599-01',
-      name: 'King James (Authorised) Version',
-      abbreviation: 'KJV',
-      language: { id: 'eng', name: 'English', nameLocal: 'English' },
-      description: 'Classic English translation from 1611'
-    },
-    {
-      id: '06125adad2d5898a-01',
-      name: 'American Standard Version',
-      abbreviation: 'ASV',
-      language: { id: 'eng', name: 'English', nameLocal: 'English' },
-      description: 'American Standard Version from 1901'
-    },
-    {
-      id: '01b29f4b342acc35-01',
-      name: 'Literal Standard Version',
-      abbreviation: 'LSV',
-      language: { id: 'eng', name: 'English', nameLocal: 'English' },
-      description: 'Modern literal translation'
-    },
-    {
-      id: '9879dbb7cfe39e4d-04',
-      name: 'World English Bible',
-      abbreviation: 'WEB',
-      language: { id: 'eng', name: 'English', nameLocal: 'English' },
-      description: 'Public domain modern English translation'
-    },
-    {
-      id: '65eec8e0b60e656b-01',
-      name: 'Free Bible Version',
-      abbreviation: 'FBV',
-      language: { id: 'eng', name: 'English', nameLocal: 'English' },
-      description: 'Free contemporary English translation'
-    },
-    {
-      id: 'c315fa9f71d4af3a-01',
-      name: 'Geneva Bible',
-      abbreviation: 'GNV',
-      language: { id: 'eng', name: 'English', nameLocal: 'English' },
-      description: 'Historic English translation from 1599'
-    }
-  ];
+export async function getPopularTranslations(): Promise<BibleTranslation[]> {
+  try {
+    const translations = await getAllAvailableTranslations();
+    return translations.filter(t => t.category === 'popular');
+  } catch (error) {
+    console.error('Error fetching popular translations:', error);
+    return getFallbackTranslations().filter(t => t.category === 'popular');
+  }
 }
 
 // Mock function for development/testing when Bible API is not available
@@ -390,15 +310,29 @@ export interface UnifiedBibleResponse {
   translation: string;
 }
 
-// Unified Bible service that routes to appropriate API
+// Enhanced unified Bible service that routes to appropriate API with dynamic translation support
 export async function getBiblePassage(
   passages: string[],
   format: 'text' | 'html' = 'text',
-  bibleId: string = 'ESV'
+  bibleId: string = DEFAULT_BIBLE_ID
 ): Promise<UnifiedBibleResponse | null> {
   try {
+    // Validate translation ID
+    let validatedBibleId = bibleId;
+    
+    try {
+      const translation = await getTranslationById(bibleId);
+      if (!translation) {
+        console.warn(`Unknown translation ID: ${bibleId}, falling back to default`);
+        validatedBibleId = DEFAULT_BIBLE_ID;
+      }
+    } catch (translationError) {
+      console.warn('Error validating translation, using provided ID:', translationError);
+      // Continue with original bibleId if validation fails
+    }
+    
     // Route ESV requests to ESV API
-    if (bibleId === 'ESV' || bibleId === 'esv') {
+    if (isESVTranslation(validatedBibleId)) {
       const esvResponse = await ESVApi.fetchBiblePassage(passages, format);
       
       if (esvResponse) {
@@ -412,18 +346,33 @@ export async function getBiblePassage(
         };
       }
       
-      // Fallback to Bible API if ESV fails
-      console.warn('ESV API failed, falling back to Bible API');
-      return await fetchBiblePassage(passages, format, DEFAULT_BIBLE_ID);
+      // Fallback to Bible API with BSB if ESV fails
+      console.warn('ESV API failed, falling back to Bible API with BSB');
+      validatedBibleId = 'bba9f40183526463-01'; // BSB fallback
     }
     
     // Route all other translations to Bible API
-    return await fetchBiblePassage(passages, format, bibleId);
+    const bibleApiResponse = await fetchBiblePassage(passages, format, validatedBibleId);
+    
+    if (bibleApiResponse) {
+      return bibleApiResponse;
+    }
+    
+    // If primary translation fails, try BSB as fallback
+    if (validatedBibleId !== 'bba9f40183526463-01') {
+      console.warn(`${validatedBibleId} failed, trying BSB fallback`);
+      const fallbackResponse = await fetchBiblePassage(passages, format, 'bba9f40183526463-01');
+      if (fallbackResponse) {
+        return fallbackResponse;
+      }
+    }
+    
+    throw new Error('All translation sources failed');
     
   } catch (error) {
     console.error('Error in unified Bible service:', error);
     
-    // Fallback to mock content
+    // Final fallback to mock content
     const mockContent = ESVApi.getMockBiblePassage(passages);
     return {
       query: passages.join(';'),
@@ -431,7 +380,7 @@ export async function getBiblePassage(
       reference: passages.join('; '),
       passages: [mockContent],
       bibleId: bibleId,
-      translation: bibleId === 'ESV' ? 'ESV' : 'Unknown'
+      translation: isESVTranslation(bibleId) ? 'ESV' : 'Mock'
     };
   }
 }
@@ -454,3 +403,55 @@ export async function getBiblePassageHtml(
 }
 
 export { DEFAULT_BIBLE_ID };
+
+// Re-export translation discovery types
+export type { 
+  BibleTranslation,
+  TranslationGroup
+} from './translation-discovery';
+
+// Re-export translation discovery functions
+export { 
+  getTranslationGroups, 
+  getTranslationById, 
+  getTranslationDisplayName,
+  isESVTranslation,
+  clearTranslationCache
+} from './translation-discovery';
+
+// Additional convenience functions for translation management
+export async function getAvailableTranslationCount(): Promise<number> {
+  try {
+    const translations = await getAllAvailableTranslations();
+    return translations.length;
+  } catch (error) {
+    console.error('Error getting translation count:', error);
+    return 0;
+  }
+}
+
+export async function getTranslationsByCategory(category: string): Promise<BibleTranslation[]> {
+  try {
+    const translations = await getAllAvailableTranslations();
+    return translations.filter(t => t.category === category);
+  } catch (error) {
+    console.error(`Error getting ${category} translations:`, error);
+    return [];
+  }
+}
+
+export async function searchTranslations(query: string): Promise<BibleTranslation[]> {
+  try {
+    const translations = await getAllAvailableTranslations();
+    const searchTerm = query.toLowerCase();
+    
+    return translations.filter(t => 
+      t.name.toLowerCase().includes(searchTerm) ||
+      t.abbreviation.toLowerCase().includes(searchTerm) ||
+      (t.description && t.description.toLowerCase().includes(searchTerm))
+    );
+  } catch (error) {
+    console.error('Error searching translations:', error);
+    return [];
+  }
+}

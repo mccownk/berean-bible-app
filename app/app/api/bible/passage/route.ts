@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const passages = searchParams.get('passages');
+    const translationParam = searchParams.get('translation');
     
     if (!passages) {
       return NextResponse.json({ message: 'Passages parameter is required' }, { status: 400 });
@@ -25,21 +26,27 @@ export async function GET(request: NextRequest) {
 
     const passageArray = passages.split(',').map(p => p.trim());
     
-    // Get user's preferred translation
+    // Determine which translation to use (priority: URL param > user preference > default)
     let bibleId = 'ESV'; // Default to ESV
     
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { preferredTranslation: true }
-      });
-      
-      if (user?.preferredTranslation) {
-        bibleId = user.preferredTranslation;
+    if (translationParam) {
+      // Use translation from URL parameter
+      bibleId = translationParam;
+    } else {
+      // Fallback to user's preferred translation
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { preferredTranslation: true }
+        });
+        
+        if (user?.preferredTranslation) {
+          bibleId = user.preferredTranslation;
+        }
+      } catch (dbError) {
+        console.error('Error fetching user translation preference:', dbError);
+        // Continue with default translation
       }
-    } catch (dbError) {
-      console.error('Error fetching user translation preference:', dbError);
-      // Continue with default translation
     }
     
     // Use unified Bible service that routes to appropriate API

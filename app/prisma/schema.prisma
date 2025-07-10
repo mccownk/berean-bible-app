@@ -58,7 +58,13 @@ model User {
   notificationsEnabled Boolean     @default(true)
   theme             String?        @default("light")
   fontSize          String?        @default("medium")
-  preferredTranslation String?     @default("ESV") // Default to ESV
+  
+  // Enhanced translation preferences
+  preferredLanguage String?        @default("eng")     // Language preference (eng, spa, fra, etc.)
+  preferredTranslation String?     @default("ESV")     // Primary translation preference
+  secondaryTranslation String?                         // Optional secondary translation for comparison
+  translationHistory String[]      @default([])        // Recently used translations
+  favoriteTranslations String[]    @default([])        // User's favorite translations
   
   // Relations
   accounts          Account[]
