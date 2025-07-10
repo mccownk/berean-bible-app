@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { fetchBiblePassageText, getMockBiblePassage } from '@/lib/esv-api';
+import { fetchBiblePassageText, getMockBiblePassage } from '@/lib/bible-api';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,10 +23,10 @@ export async function GET(request: NextRequest) {
 
     const passageArray = passages.split(',').map(p => p.trim());
     
-    // Try to fetch from ESV API first
+    // Try to fetch from Bible API first
     let content = await fetchBiblePassageText(passageArray);
     
-    // If ESV API fails, use mock content for development
+    // If Bible API fails, use mock content for development
     if (!content) {
       content = getMockBiblePassage(passageArray);
     }
