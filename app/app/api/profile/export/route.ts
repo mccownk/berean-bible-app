@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
           fontSize: user?.fontSize
         }
       },
-      readingProgress: progress.map(p => ({
+     readingProgress: progress.map((p: any) => ({
         day: p.dailyReading.day,
         passages: [...(p.dailyReading.ntPassages || []), ...(p.dailyReading.otPassages || [])],
         estimatedMinutes: p.dailyReading.totalEstimatedMinutes,
