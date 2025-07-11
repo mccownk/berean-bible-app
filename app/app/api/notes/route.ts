@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({
-      notes: notes.map(note => ({
+      notes: notes.map((note: any) => ({
         id: note.id,
         content: note.content,
         createdAt: note.createdAt,
