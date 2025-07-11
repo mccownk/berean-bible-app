@@ -1,5 +1,11 @@
 {
   "compilerOptions": {
+   {
+  "compilerOptions": {
+    "noImplicitAny": false,
+    // ... other options
+  }
+}
     "target": "es2020",
     "lib": [
       "dom",
