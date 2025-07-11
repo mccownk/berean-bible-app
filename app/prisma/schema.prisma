@@ -1,15 +1,15 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
-    provider = "prisma-client-js"
-    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
-    output = "/home/ubuntu/berean-bible-app/app/node_modules/.prisma/client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// NextAuth.js required models
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -27,7 +27,6 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
-  @@map("accounts")
 }
 
 model Session {
@@ -36,44 +35,33 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("sessions")
 }
 
 model User {
-  id                String         @id @default(cuid())
-  name              String?
-  email             String         @unique
-  emailVerified     DateTime?
-  image             String?
-  password          String?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Bible reading plan fields
+  currentDay           Int      @default(1)
+  startDate           DateTime @default(now())
+  completedReadings   Int[]    @default([])
+  readingStreak       Int      @default(0)
+  longestStreak       Int      @default(0)
+  lastReadingDate     DateTime?
   
   // User preferences
-  timezone          String?        @default("UTC")
-  preferredReadingTime Int?        // Minutes for preferred daily reading time
-  preferredTimeOfDay String?       @default("Morning") // Morning, Afternoon, Evening
-  preferredStartTime String?       @default("09:00")   // Time in HH:MM format
-  notificationsEnabled Boolean     @default(true)
-  theme             String?        @default("light")
-  fontSize          String?        @default("medium")
+  preferredTranslation String   @default("ESV")
+  readingTimeOfDay     String?  // "Morning", "Afternoon", "Evening"
+  readingStartTime     String?  // "09:00", "14:00", "20:00", etc.
   
-  // Enhanced translation preferences
-  preferredLanguage String?        @default("eng")     // Language preference (eng, spa, fra, etc.)
-  preferredTranslation String?     @default("ESV")     // Primary translation preference
-  secondaryTranslation String?                         // Optional secondary translation for comparison
-  translationHistory String[]      @default([])        // Recently used translations
-  favoriteTranslations String[]    @default([])        // User's favorite translations
-  
-  // Relations
-  accounts          Account[]
-  sessions          Session[]
-  readingProgress   ReadingProgress[]
-  notes             Note[]
-  achievements      UserAchievement[]
-  
-  @@map("users")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {
@@ -82,165 +70,4 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
-  @@map("verificationtokens")
-}
-
-// Bible reading plan models
-model ReadingPlan {
-  id                String   @id @default(cuid())
-  name              String
-  description       String?
-  totalDays         Int      @default(1260) // 1,260 days for the complete Berean plan
-  totalYears        Float    @default(3.5)  // 3.5 years duration
-  
-  // Phase information
-  phase1EndDay      Int      @default(750)  // Phase 1: Essential Foundation (Days 1-750)
-  phase2EndDay      Int      @default(1080) // Phase 2: Expansion (Days 751-1080)  
-  phase3EndDay      Int      @default(1260) // Phase 3: Completion (Days 1081-1260)
-  
-  // Old Testament cycle information
-  otCycleDays       Int      @default(365)  // 365-day OT cycles
-  otTotalCycles     Float    @default(3.5)  // Repeats 3.5 times during the plan
-  
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  // Relations
-  dailyReadings     DailyReading[]
-  userProgress      ReadingProgress[]
-  
-  @@map("reading_plans")
-}
-
-model DailyReading {
-  id                String      @id @default(cuid())
-  planId            String
-  day               Int
-  phase             Int         // 1, 2, or 3 for the three phases
-  
-  // New Testament Reading
-  ntPassages        String[]    // Array of NT passages (e.g., ["1 John 1-5"] for entire book)
-  ntEstimatedMinutes Int?       // Estimated NT reading time in minutes
-  ntRepetitionType  String      // "entire_book", "chapters", "verses"
-  ntRepetitionCount Int         @default(30) // How many days to repeat (usually 30)
-  
-  // Old Testament Reading (simultaneous)
-  otPassages        String[]    // Array of OT passages (e.g., ["Genesis 1-3"])
-  otEstimatedMinutes Int?       // Estimated OT reading time in minutes
-  otCycle           Int         // Which 365-day OT cycle (1-4, as it repeats 3.5 times)
-  
-  // Combined estimated time
-  totalEstimatedMinutes Int?    // Total estimated reading time for both NT and OT
-  
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  
-  // Relations
-  plan              ReadingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  progress          ReadingProgress[]
-  notes             Note[]
-  
-  @@unique([planId, day])
-  @@map("daily_readings")
-}
-
-// User progress tracking
-model ReadingProgress {
-  id                String       @id @default(cuid())
-  userId            String
-  planId            String
-  readingId         String
-  
-  // NT Progress
-  ntCompleted       Boolean      @default(false)
-  ntCompletedAt     DateTime?
-  ntReadingTimeSeconds Int?      // Time spent reading NT portion
-  
-  // OT Progress
-  otCompleted       Boolean      @default(false)
-  otCompletedAt     DateTime?
-  otReadingTimeSeconds Int?      // Time spent reading OT portion
-  
-  // Combined Progress
-  isCompleted       Boolean      @default(false) // Both NT and OT completed
-  completedAt       DateTime?    // When both portions were completed
-  totalReadingTimeSeconds Int?   // Total time spent reading both portions
-  
-  // Phase and cycle tracking
-  currentPhase      Int          @default(1) // Current phase (1, 2, or 3)
-  otCycle           Int          @default(1) // Which OT cycle (1-4)
-  
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  
-  // Relations
-  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan              ReadingPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
-  dailyReading      DailyReading @relation(fields: [readingId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, planId, readingId])
-  @@map("reading_progress")
-}
-
-// User notes and reflections
-model Note {
-  id                String       @id @default(cuid())
-  userId            String
-  readingId         String
-  content           String       @db.Text
-  isPrivate         Boolean      @default(true)
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  
-  // Relations
-  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dailyReading      DailyReading @relation(fields: [readingId], references: [id], onDelete: Cascade)
-  
-  @@map("notes")
-}
-
-// Achievement system
-model Achievement {
-  id                String   @id @default(cuid())
-  name              String
-  description       String
-  icon              String?
-  requiredCount     Int      @default(1)
-  category          String   // "streak", "completion", "milestone", etc.
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  // Relations
-  userAchievements  UserAchievement[]
-  
-  @@map("achievements")
-}
-
-model UserAchievement {
-  id            String      @id @default(cuid())
-  userId        String
-  achievementId String
-  earnedAt      DateTime    @default(now())
-  
-  // Relations
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, achievementId])
-  @@map("user_achievements")
-}
-
-// Analytics and statistics
-model ReadingStreak {
-  id                String   @id @default(cuid())
-  userId            String
-  currentStreak     Int      @default(0)
-  longestStreak     Int      @default(0)
-  lastReadingDate   DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  @@unique([userId])
-  @@map("reading_streaks")
 }
